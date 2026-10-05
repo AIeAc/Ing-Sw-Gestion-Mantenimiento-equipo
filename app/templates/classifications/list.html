@@ -1,0 +1,37 @@
+{% extends "app_base.html" %}
+
+{% block title %}Clasificaciones | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Administración</p>
+    <h1>Clasificaciones</h1>
+    <p>Organiza el inventario mediante categorías básicas.</p>
+  </div>
+  <a class="button" href="{{ url_for('classifications.create_category') }}"><i class="ph ph-plus" aria-hidden="true"></i><span>Nueva categoría</span></a>
+</header>
+
+<section class="content-section" aria-labelledby="categories-title">
+  <div class="section-heading"><h2 id="categories-title">Categorías</h2><p>{{ categories|length }} registradas</p></div>
+  {% if categories %}
+    <div class="table-scroll" tabindex="0" aria-label="Tabla de categorías">
+      <table>
+        <thead><tr><th scope="col">Nombre</th><th scope="col">Descripción</th><th scope="col">Estado</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead>
+        <tbody>
+          {% for category in categories %}
+            <tr>
+              <td><strong>{{ category.nombre }}</strong></td>
+              <td>{{ category.descripcion or 'Sin descripción' }}</td>
+              <td><span class="status {{ 'status-active' if category.activo else 'status-inactive' }}">{{ 'Activa' if category.activo else 'Inactiva' }}</span></td>
+              <td class="table-action"><a href="{{ url_for('classifications.edit_category', category_id=category.id_categoria) }}"><i class="ph ph-pencil-simple" aria-hidden="true"></i><span>Editar</span></a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state"><h3>No hay categorías</h3><p>Crea la primera para poder registrar equipos.</p><a class="button" href="{{ url_for('classifications.create_category') }}">Nueva categoría</a></div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "app_base.html" %}
+
+{% block title %}Mantenimiento de {{ item.equipo }} | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div>
+    <a class="back-link" href="{{ url_for('maintenance.list_maintenance') }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver a mantenimientos</span></a>
+    <p class="eyebrow">{{ types[item.tipo] }} · {{ item.codigo_interno }}</p>
+    <h1>{{ item.equipo }}</h1>
+    <p>{{ item.descripcion }}</p>
+  </div>
+  <a class="button" href="{{ url_for('maintenance.edit_maintenance', maintenance_id=item.id_mantenimiento) }}"><i class="ph ph-pencil-simple" aria-hidden="true"></i><span>Editar mantenimiento</span></a>
+</header>
+
+<section class="detail-panel" aria-labelledby="maintenance-title">
+  <div class="section-heading"><h2 id="maintenance-title">Información del mantenimiento</h2><span class="status status-{{ item.estado|lower }}">{{ statuses[item.estado] }}</span></div>
+  <dl class="detail-grid">
+    <div><dt>Tipo</dt><dd>{{ types[item.tipo] }}</dd></div>
+    <div><dt>Técnico responsable</dt><dd>{{ item.tecnico }}</dd></div>
+    <div><dt>Fecha programada</dt><dd>{{ item.fecha_programada.strftime('%d/%m/%Y · %H:%M') if item.fecha_programada else 'No programada' }}</dd></div>
+    <div><dt>Fecha de inicio</dt><dd>{{ item.fecha_inicio.strftime('%d/%m/%Y · %H:%M') if item.fecha_inicio else 'No iniciada' }}</dd></div>
+    <div><dt>Fecha de finalización</dt><dd>{{ item.fecha_fin.strftime('%d/%m/%Y · %H:%M') if item.fecha_fin else 'No finalizada' }}</dd></div>
+    <div><dt>Costo</dt><dd>{{ '$ {:,.2f}'.format(item.costo) if item.costo is not none else 'No registrado' }}</dd></div>
+    <div><dt>Registrado por</dt><dd>{{ item.registrador }}</dd></div>
+    <div><dt>Última actualización</dt><dd>{{ item.actualizado_en.strftime('%d/%m/%Y · %H:%M') }}</dd></div>
+  </dl>
+  <div class="description-block"><h3>Descripción</h3><p>{{ item.descripcion }}</p></div>
+  <div class="description-block"><h3>Observaciones</h3><p>{{ item.observaciones or 'No se agregaron observaciones.' }}</p></div>
+  <div class="detail-links"><a href="{{ url_for('maintenance.equipment_history', equipment_id=item.id_equipo) }}"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i> Consultar historial del equipo</a></div>
+</section>
+{% endblock %}

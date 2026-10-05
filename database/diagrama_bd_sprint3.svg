@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1380" viewBox="0 0 1800 1380">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .title { font: 700 38px 'DejaVu Sans', sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 18px 'DejaVu Sans', sans-serif; fill: #475569; }
+      .table-title { font: 700 20px 'DejaVu Sans', sans-serif; fill: #ffffff; letter-spacing: .4px; }
+      .field { font: 400 15px 'DejaVu Sans Mono', monospace; fill: #1e293b; }
+      .key { font-weight: 700; fill: #0f172a; }
+      .relation { stroke: #64748b; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .relation-label { font: 600 13px 'DejaVu Sans', sans-serif; fill: #475569; }
+      .view-title { font: 700 16px 'DejaVu Sans', sans-serif; fill: #334155; }
+      .view-text { font: 400 13px 'DejaVu Sans', sans-serif; fill: #64748b; }
+      .legend { font: 600 14px 'DejaVu Sans', sans-serif; fill: #334155; }
+    </style>
+  </defs>
+
+  <rect width="1800" height="1380" fill="#f8fafc"/>
+  <text x="60" y="58" class="title">Base de datos — Sistema de mantenimiento predictivo</text>
+  <text x="60" y="88" class="subtitle">Diagrama entidad–relación consolidado hasta el Sprint 3 · PostgreSQL</text>
+
+  <!-- Relationships behind the entities -->
+  <path class="relation" d="M320 220 H390"/>
+  <text x="337" y="207" class="relation-label">1 : N</text>
+
+  <path class="relation" d="M710 235 H1140"/>
+  <text x="900" y="222" class="relation-label">registra 1 : N</text>
+
+  <path class="relation" d="M1060 220 H1140"/>
+  <text x="1070" y="207" class="relation-label">1 : N</text>
+
+  <path class="relation" d="M1330 390 V475"/>
+  <text x="1342" y="437" class="relation-label">1 : N</text>
+
+  <path class="relation" d="M550 390 V440 H1120 V540"/>
+  <text x="773" y="427" class="relation-label">técnico / registrador</text>
+
+  <path class="relation" d="M550 390 V690 H455 V760"/>
+  <text x="465" y="676" class="relation-label">registra lotes</text>
+
+  <path class="relation" d="M1140 350 H1080 V760"/>
+  <text x="1092" y="704" class="relation-label">genera mediciones</text>
+
+  <path class="relation" d="M340 935 H840"/>
+  <text x="515" y="922" class="relation-label">define la variable</text>
+
+  <path class="relation" d="M770 945 H840"/>
+  <text x="778" y="932" class="relation-label">1 : N</text>
+
+  <path class="relation" d="M1260 945 H1320"/>
+  <text x="1265" y="932" class="relation-label">0 : 1</text>
+
+  <!-- Sprint 1 entities -->
+  <g>
+    <rect x="50" y="130" width="270" height="230" rx="12" fill="#ffffff" stroke="#93c5fd" stroke-width="2"/>
+    <path d="M62 130 H308 Q320 130 320 142 V182 H50 V142 Q50 130 62 130" fill="#2563eb"/>
+    <text x="72" y="164" class="table-title">ROLES</text>
+    <text x="72" y="211" class="field key">PK  id_rol</text>
+    <text x="72" y="241" class="field">UK  nombre</text>
+    <text x="72" y="271" class="field">    descripcion</text>
+    <text x="72" y="301" class="field">    activo</text>
+    <text x="72" y="331" class="field">    creado_en</text>
+  </g>
+
+  <g>
+    <rect x="390" y="130" width="320" height="260" rx="12" fill="#ffffff" stroke="#93c5fd" stroke-width="2"/>
+    <path d="M402 130 H698 Q710 130 710 142 V182 H390 V142 Q390 130 402 130" fill="#2563eb"/>
+    <text x="412" y="164" class="table-title">USUARIOS</text>
+    <text x="412" y="211" class="field key">PK  id_usuario</text>
+    <text x="412" y="241" class="field key">FK  id_rol</text>
+    <text x="412" y="271" class="field">    nombre, apellidos</text>
+    <text x="412" y="301" class="field">UK  correo</text>
+    <text x="412" y="331" class="field">    contrasena_hash</text>
+    <text x="412" y="361" class="field">    activo, ultimo_acceso</text>
+  </g>
+
+  <g>
+    <rect x="780" y="130" width="280" height="230" rx="12" fill="#ffffff" stroke="#93c5fd" stroke-width="2"/>
+    <path d="M792 130 H1048 Q1060 130 1060 142 V182 H780 V142 Q780 130 792 130" fill="#2563eb"/>
+    <text x="802" y="164" class="table-title">CATEGORIAS</text>
+    <text x="802" y="211" class="field key">PK  id_categoria</text>
+    <text x="802" y="241" class="field">UK  nombre</text>
+    <text x="802" y="271" class="field">    descripcion</text>
+    <text x="802" y="301" class="field">    activo</text>
+    <text x="802" y="331" class="field">    creado_en</text>
+  </g>
+
+  <g>
+    <rect x="1140" y="130" width="390" height="260" rx="12" fill="#ffffff" stroke="#93c5fd" stroke-width="2"/>
+    <path d="M1152 130 H1518 Q1530 130 1530 142 V182 H1140 V142 Q1140 130 1152 130" fill="#2563eb"/>
+    <text x="1162" y="164" class="table-title">EQUIPOS</text>
+    <text x="1162" y="211" class="field key">PK  id_equipo</text>
+    <text x="1162" y="241" class="field key">FK  id_categoria, registrado_por</text>
+    <text x="1162" y="271" class="field">UK  codigo_interno, numero_serie</text>
+    <text x="1162" y="301" class="field">    nombre, marca, modelo</text>
+    <text x="1162" y="331" class="field">    ubicacion, estado</text>
+    <text x="1162" y="361" class="field">    fecha_adquisicion</text>
+  </g>
+
+  <!-- Sprint 2 -->
+  <g>
+    <rect x="1120" y="475" width="430" height="250" rx="12" fill="#ffffff" stroke="#fbbf24" stroke-width="2"/>
+    <path d="M1132 475 H1538 Q1550 475 1550 487 V527 H1120 V487 Q1120 475 1132 475" fill="#d97706"/>
+    <text x="1142" y="509" class="table-title">MANTENIMIENTOS</text>
+    <text x="1142" y="556" class="field key">PK  id_mantenimiento</text>
+    <text x="1142" y="586" class="field key">FK  id_equipo, id_tecnico</text>
+    <text x="1142" y="616" class="field key">FK  registrado_por</text>
+    <text x="1142" y="646" class="field">    tipo, estado, costo</text>
+    <text x="1142" y="676" class="field">    fechas, descripcion, observaciones</text>
+    <text x="1142" y="706" class="field">    creado_en, actualizado_en</text>
+  </g>
+
+  <!-- Sprint 3 -->
+  <g>
+    <rect x="40" y="760" width="300" height="275" rx="12" fill="#ffffff" stroke="#86efac" stroke-width="2"/>
+    <path d="M52 760 H328 Q340 760 340 772 V812 H40 V772 Q40 760 52 760" fill="#15803d"/>
+    <text x="62" y="794" class="table-title">VARIABLES_OPERATIVAS</text>
+    <text x="62" y="841" class="field key">PK  id_variable</text>
+    <text x="62" y="871" class="field">UK  codigo, nombre</text>
+    <text x="62" y="901" class="field">    unidad, descripcion</text>
+    <text x="62" y="931" class="field">    valor_minimo</text>
+    <text x="62" y="961" class="field">    valor_maximo</text>
+    <text x="62" y="991" class="field">    activo, actualizado_en</text>
+  </g>
+
+  <g>
+    <rect x="410" y="760" width="360" height="305" rx="12" fill="#ffffff" stroke="#86efac" stroke-width="2"/>
+    <path d="M422 760 H758 Q770 760 770 772 V812 H410 V772 Q410 760 422 760" fill="#15803d"/>
+    <text x="432" y="794" class="table-title">LOTES_MEDICIONES</text>
+    <text x="432" y="841" class="field key">PK  id_lote</text>
+    <text x="432" y="871" class="field key">FK  registrado_por</text>
+    <text x="432" y="901" class="field">    tipo_origen, estado</text>
+    <text x="432" y="931" class="field">    nombre_archivo</text>
+    <text x="432" y="961" class="field">    registros_totales</text>
+    <text x="432" y="991" class="field">    validos, rechazados</text>
+    <text x="432" y="1021" class="field">    iniciado_en, finalizado_en</text>
+    <text x="432" y="1051" class="field">    detalle_error</text>
+  </g>
+
+  <g>
+    <rect x="840" y="760" width="420" height="275" rx="12" fill="#ffffff" stroke="#86efac" stroke-width="2"/>
+    <path d="M852 760 H1248 Q1260 760 1260 772 V812 H840 V772 Q840 760 852 760" fill="#15803d"/>
+    <text x="862" y="794" class="table-title">MEDICIONES_OPERATIVAS</text>
+    <text x="862" y="841" class="field key">PK  id_medicion</text>
+    <text x="862" y="871" class="field key">FK  id_equipo</text>
+    <text x="862" y="901" class="field key">FK  id_variable</text>
+    <text x="862" y="931" class="field key">FK  id_lote</text>
+    <text x="862" y="961" class="field">    valor</text>
+    <text x="862" y="991" class="field">    medido_en</text>
+    <text x="862" y="1021" class="field">    creado_en · registro inmutable</text>
+  </g>
+
+  <g>
+    <rect x="1320" y="760" width="430" height="305" rx="12" fill="#ffffff" stroke="#86efac" stroke-width="2"/>
+    <path d="M1332 760 H1738 Q1750 760 1750 772 V812 H1320 V772 Q1320 760 1332 760" fill="#15803d"/>
+    <text x="1342" y="794" class="table-title">ALERTAS_RANGO</text>
+    <text x="1342" y="841" class="field key">PK  id_alerta</text>
+    <text x="1342" y="871" class="field key">FK/UK  id_medicion</text>
+    <text x="1342" y="901" class="field key">FK     atendida_por</text>
+    <text x="1342" y="931" class="field">       tipo, estado</text>
+    <text x="1342" y="961" class="field">       valor_medido</text>
+    <text x="1342" y="991" class="field">       valor_minimo, valor_maximo</text>
+    <text x="1342" y="1021" class="field">       atendida_en, observaciones</text>
+    <text x="1342" y="1051" class="field">       generada_en</text>
+  </g>
+
+  <!-- Views -->
+  <rect x="40" y="1115" width="1710" height="165" rx="14" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="8 6" stroke-width="2"/>
+  <text x="65" y="1152" class="view-title">VISTAS DERIVADAS</text>
+  <text x="65" y="1185" class="view-title">historial_mantenimientos_equipo</text>
+  <text x="65" y="1210" class="view-text">Mantenimientos + equipos + técnicos</text>
+
+  <text x="485" y="1185" class="view-title">calendario_mantenimientos</text>
+  <text x="485" y="1210" class="view-text">Mantenimientos con fecha programada</text>
+
+  <text x="875" y="1185" class="view-title">mediciones_para_grafica</text>
+  <text x="875" y="1210" class="view-text">Serie temporal, rango, equipo y variable</text>
+
+  <text x="1285" y="1185" class="view-title">resumen_indicadores_dashboard</text>
+  <text x="1285" y="1210" class="view-text">Disponibilidad, correctivos, alertas y costos</text>
+
+  <!-- Legend -->
+  <circle cx="70" cy="1330" r="9" fill="#2563eb"/>
+  <text x="88" y="1335" class="legend">Sprint 1</text>
+  <circle cx="200" cy="1330" r="9" fill="#d97706"/>
+  <text x="218" y="1335" class="legend">Sprint 2</text>
+  <circle cx="330" cy="1330" r="9" fill="#15803d"/>
+  <text x="348" y="1335" class="legend">Sprint 3</text>
+  <text x="1500" y="1335" class="view-text">PK: clave primaria · FK: clave foránea · UK: valor único</text>
+</svg>

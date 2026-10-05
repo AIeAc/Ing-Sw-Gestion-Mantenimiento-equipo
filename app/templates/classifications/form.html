@@ -1,0 +1,29 @@
+{% extends "app_base.html" %}
+
+{% set creating = mode == 'create' %}
+{% block title %}{{ 'Nueva' if creating else 'Editar' }} categoría | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header compact-header"><div><a class="back-link" href="{{ url_for('classifications.list_categories') }}">Volver a clasificaciones</a><h1>{{ 'Nueva categoría' if creating else 'Editar categoría' }}</h1><p>Define una clasificación clara para los equipos.</p></div></header>
+
+<form class="record-form narrow-form" method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <section class="form-section">
+    <div class="field">
+      <label for="nombre">Nombre <span>(obligatorio)</span></label>
+      <input id="nombre" name="nombre" value="{{ data.nombre }}" maxlength="100" required {% if errors.nombre %}aria-invalid="true" aria-describedby="nombre-error"{% endif %}>
+      {% if errors.nombre %}<p class="field-error" id="nombre-error">{{ errors.nombre }}</p>{% endif %}
+    </div>
+    <div class="field">
+      <label for="descripcion">Descripción</label>
+      <textarea id="descripcion" name="descripcion" rows="4" maxlength="255" {% if errors.descripcion %}aria-invalid="true" aria-describedby="descripcion-error"{% endif %}>{{ data.descripcion }}</textarea>
+      {% if errors.descripcion %}<p class="field-error" id="descripcion-error">{{ errors.descripcion }}</p>{% endif %}
+    </div>
+    {% if not creating %}
+      <label class="check-field"><input type="checkbox" name="activo" {% if data.activo %}checked{% endif %}> <span><strong>Categoría activa</strong><small>Las categorías inactivas no aparecen al registrar equipos.</small></span></label>
+      {% if errors.activo %}<p class="field-error">{{ errors.activo }}</p>{% endif %}
+    {% endif %}
+  </section>
+  <div class="form-actions"><button class="button" type="submit">{{ 'Crear categoría' if creating else 'Guardar cambios' }}</button><a class="button button-secondary" href="{{ url_for('classifications.list_categories') }}">Cancelar</a></div>
+</form>
+{% endblock %}

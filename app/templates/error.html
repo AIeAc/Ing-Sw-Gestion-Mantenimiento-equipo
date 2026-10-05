@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | Mantenimiento Predictivo{% endblock %}
+
+{% block body %}
+<main class="error-page">
+  <div>
+    <span class="app-brand-mark" aria-hidden="true">MP</span>
+    <p class="error-code">Error {{ status_code }}</p>
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+    <a class="button" href="{{ url_for('inventory.list_equipment') if g.user else url_for('auth.login') }}">Volver</a>
+  </div>
+</main>
+{% endblock %}

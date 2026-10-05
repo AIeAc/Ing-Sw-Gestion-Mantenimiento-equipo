@@ -1,0 +1,63 @@
+{% extends "app_base.html" %}
+{% block title %}Dashboard | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header dashboard-header">
+  <div>
+    <h1>Visión general</h1>
+    <p>Estado operativo de los equipos, mantenimientos y mediciones recientes.</p>
+  </div>
+  <div class="dashboard-period" aria-label="Periodo de la gráfica">
+    <i class="ph ph-calendar-blank" aria-hidden="true"></i><span>Últimos 6 meses</span>
+  </div>
+</header>
+
+<section class="dashboard-kpis dashboard-kpi-row" aria-label="Indicadores principales">
+  <article class="kpi kpi-availability">
+    <div class="kpi-heading"><span>Disponibilidad</span><i class="ph ph-activity" aria-hidden="true"></i></div>
+    <div class="kpi-main">
+      <div><strong>{{ summary.disponibilidad_porcentaje }}%</strong><small>{{ summary.equipos_operativos }} de {{ summary.total_equipos_activos }} disponibles</small></div>
+      <div class="kpi-ring" style="--progress: {{ summary.disponibilidad_porcentaje }}%" role="img" aria-label="Disponibilidad del {{ summary.disponibilidad_porcentaje }} por ciento"><i class="ph ph-check" aria-hidden="true"></i></div>
+    </div>
+  </article>
+  <article class="kpi kpi-outage">
+    <div class="kpi-heading"><span>Fuera de servicio</span><i class="ph ph-warning" aria-hidden="true"></i></div>
+    <div class="kpi-main"><div><strong>{{ summary.equipos_fuera_de_servicio }}</strong><small>Equipos activos no disponibles</small></div><span class="kpi-status kpi-status-alert">Requieren atención</span></div>
+  </article>
+  <article class="kpi kpi-correctives">
+    <div class="kpi-heading"><span>Eventos correctivos</span><i class="ph ph-wrench" aria-hidden="true"></i></div>
+    <div class="kpi-main"><div><strong>{{ summary.mantenimientos_correctivos }}</strong><small>Mantenimientos registrados</small></div><span class="kpi-status">Histórico actual</span></div>
+  </article>
+  <article class="kpi kpi-cost">
+    <div class="kpi-heading"><span>Costo de mantenimiento</span><i class="ph ph-currency-dollar" aria-hidden="true"></i></div>
+    <div class="kpi-main"><div><strong>${{ '{:,.0f}'.format(summary.costo_mantenimiento_total) }}</strong><small>Servicios completados</small></div><span class="kpi-status">Costo acumulado</span></div>
+  </article>
+</section>
+
+<div class="dashboard-bento">
+  <section class="chart-panel dashboard-chart" aria-labelledby="cost-trend-title">
+    <div class="dashboard-panel-heading">
+      <div><h2 id="cost-trend-title">Costos y correctivos</h2><p>Comportamiento mensual del mantenimiento</p></div>
+      <span class="chart-total-small">${{ '{:,.2f}'.format(summary.costo_mantenimiento_total) }}</span>
+    </div>
+    <div class="bar-chart-wrap" data-bar-chart aria-label="Gráfica mensual de costos y mantenimientos correctivos"><svg role="img" aria-labelledby="cost-trend-title"></svg></div>
+    <script type="application/json" data-bar-chart-data>{{ monthly_data|tojson }}</script>
+  </section>
+
+  <section class="content-section dashboard-alerts" aria-labelledby="pending-alerts-title">
+    <div class="section-heading">
+      <div><h2 id="pending-alerts-title">Alertas pendientes</h2><p>{{ summary.alertas_rango_pendientes }} mediciones requieren revisión</p></div>
+      <a href="{{ url_for('alerts.list_alerts', estado='PENDIENTE') }}" aria-label="Ver todas las alertas pendientes"><i class="ph ph-arrow-up-right" aria-hidden="true"></i></a>
+    </div>
+    {% if recent_alerts %}
+      <ul class="compact-alert-list">
+        {% for alert in recent_alerts %}
+          <li><a href="{{ url_for('alerts.alert_detail', alert_id=alert.id_alerta) }}"><span class="compact-alert-icon"><i class="ph ph-warning" aria-hidden="true"></i></span><span><strong>{{ alert.variable }}</strong><small>{{ alert.equipo }}</small><small>{{ alert.valor_medido|number }} {{ alert.unidad }} · {{ alert.generada_en.strftime('%d/%m/%Y %H:%M') }}</small></span><i class="ph ph-caret-right" aria-hidden="true"></i></a></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty-state compact-empty"><i class="ph ph-shield-check empty-state-icon" aria-hidden="true"></i><h3>Sin alertas pendientes</h3><p>No hay mediciones fuera de rango por revisar.</p></div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

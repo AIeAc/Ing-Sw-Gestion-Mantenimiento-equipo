@@ -1,0 +1,29 @@
+{% extends "app_base.html" %}
+
+{% set creating = mode == 'create' %}
+{% block title %}{{ 'Nuevo' if creating else 'Editar' }} usuario | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header compact-header"><div><a class="back-link" href="{{ url_for('admin.list_users') }}">Volver a usuarios</a><h1>{{ 'Nuevo usuario' if creating else 'Editar usuario' }}</h1><p>{{ 'Crea una cuenta y asigna su nivel de acceso.' if creating else 'Actualiza los datos y permisos de la cuenta.' }}</p></div></header>
+
+{% if errors %}<div class="error-summary" role="alert"><h2>Revisa la información</h2><p>Hay campos que requieren atención antes de guardar.</p></div>{% endif %}
+
+<form class="record-form" method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <section class="form-section">
+    <div class="form-grid">
+      <div class="field"><label for="nombre">Nombre <span>(obligatorio)</span></label><input id="nombre" name="nombre" value="{{ data.nombre }}" autocomplete="given-name" required maxlength="100" {% if errors.nombre %}aria-invalid="true" aria-describedby="nombre-error"{% endif %}>{% if errors.nombre %}<p class="field-error" id="nombre-error">{{ errors.nombre }}</p>{% endif %}</div>
+      <div class="field"><label for="apellidos">Apellidos <span>(obligatorio)</span></label><input id="apellidos" name="apellidos" value="{{ data.apellidos }}" autocomplete="family-name" required maxlength="150" {% if errors.apellidos %}aria-invalid="true" aria-describedby="apellidos-error"{% endif %}>{% if errors.apellidos %}<p class="field-error" id="apellidos-error">{{ errors.apellidos }}</p>{% endif %}</div>
+      <div class="field"><label for="correo">Correo electrónico <span>(obligatorio)</span></label><input id="correo" name="correo" type="email" value="{{ data.correo }}" autocomplete="email" required maxlength="254" {% if errors.correo %}aria-invalid="true" aria-describedby="correo-error"{% endif %}>{% if errors.correo %}<p class="field-error" id="correo-error">{{ errors.correo }}</p>{% endif %}</div>
+      <div class="field"><label for="id_rol">Rol <span>(obligatorio)</span></label><select id="id_rol" name="id_rol" required {% if errors.id_rol %}aria-invalid="true" aria-describedby="rol-error"{% endif %}><option value="">Selecciona un rol</option>{% for role in roles %}<option value="{{ role.id_rol }}" {% if data.id_rol == role.id_rol|string %}selected{% endif %}>{{ role.nombre }}</option>{% endfor %}</select>{% if errors.id_rol %}<p class="field-error" id="rol-error">{{ errors.id_rol }}</p>{% endif %}</div>
+      {% if creating %}
+        <div class="field"><label for="contrasena">Contraseña <span>(mínimo 10 caracteres)</span></label><input id="contrasena" name="contrasena" type="password" autocomplete="new-password" required {% if errors.contrasena %}aria-invalid="true" aria-describedby="contrasena-error"{% endif %}>{% if errors.contrasena %}<p class="field-error" id="contrasena-error">{{ errors.contrasena }}</p>{% endif %}</div>
+        <div class="field"><label for="confirmacion">Confirmar contraseña</label><input id="confirmacion" name="confirmacion" type="password" autocomplete="new-password" required {% if errors.confirmacion %}aria-invalid="true" aria-describedby="confirmacion-error"{% endif %}>{% if errors.confirmacion %}<p class="field-error" id="confirmacion-error">{{ errors.confirmacion }}</p>{% endif %}</div>
+      {% else %}
+        <div class="field field-wide"><label class="check-field"><input type="checkbox" name="activo" {% if data.activo %}checked{% endif %} {% if edited_user.id_usuario == g.user.id_usuario %}aria-describedby="self-account-note"{% endif %}> <span><strong>Cuenta activa</strong><small id="self-account-note">Permite que la persona inicie sesión.</small></span></label>{% if errors.activo %}<p class="field-error">{{ errors.activo }}</p>{% endif %}</div>
+      {% endif %}
+    </div>
+  </section>
+  <div class="form-actions"><button class="button" type="submit">{{ 'Crear usuario' if creating else 'Guardar cambios' }}</button><a class="button button-secondary" href="{{ url_for('admin.list_users') }}">Cancelar</a></div>
+</form>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "app_base.html" %}
+
+{% block title %}{{ item.nombre }} | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div>
+    <a class="back-link" href="{{ url_for('inventory.list_equipment') }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver al inventario</span></a>
+    <p class="eyebrow">{{ item.codigo_interno }}</p>
+    <h1>{{ item.nombre }}</h1>
+    <p>{{ item.categoria }}</p>
+  </div>
+  <div class="header-actions">
+    <a class="button button-secondary" href="{{ url_for('maintenance.equipment_history', equipment_id=item.id_equipo) }}"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i><span>Ver historial</span></a>
+    <a class="button" href="{{ url_for('inventory.edit_equipment', equipment_id=item.id_equipo) }}"><i class="ph ph-pencil-simple" aria-hidden="true"></i><span>Editar equipo</span></a>
+  </div>
+</header>
+
+<section class="detail-panel" aria-labelledby="general-title">
+  <div class="section-heading">
+    <h2 id="general-title">Información del equipo</h2>
+    <span class="status status-{{ item.estado|lower }}">{{ {'OPERATIVO': 'Operativo', 'FUERA_DE_SERVICIO': 'Fuera de servicio', 'DADO_DE_BAJA': 'Dado de baja'}[item.estado] }}</span>
+  </div>
+  <dl class="detail-grid">
+    <div><dt>Código interno</dt><dd>{{ item.codigo_interno }}</dd></div>
+    <div><dt>Categoría</dt><dd>{{ item.categoria }}</dd></div>
+    <div><dt>Marca</dt><dd>{{ item.marca or 'No registrada' }}</dd></div>
+    <div><dt>Modelo</dt><dd>{{ item.modelo or 'No registrado' }}</dd></div>
+    <div><dt>Número de serie</dt><dd>{{ item.numero_serie or 'No registrado' }}</dd></div>
+    <div><dt>Ubicación</dt><dd>{{ item.ubicacion or 'No asignada' }}</dd></div>
+    <div><dt>Fecha de adquisición</dt><dd>{{ item.fecha_adquisicion.strftime('%d/%m/%Y') if item.fecha_adquisicion else 'No registrada' }}</dd></div>
+    <div><dt>Registrado por</dt><dd>{{ item.registrado_nombre }} {{ item.registrado_apellidos }}</dd></div>
+  </dl>
+  <div class="description-block">
+    <h3>Descripción</h3>
+    <p>{{ item.descripcion or 'No se agregó una descripción.' }}</p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "app_base.html" %}
+
+{% block title %}Variables operativas | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div><p class="eyebrow">Catálogo operativo</p><h1>Variables operativas</h1><p>Define las magnitudes, unidades y rangos permitidos para las mediciones.</p></div>
+  {% if g.user.rol == 'Administrador' %}<a class="button" href="{{ url_for('variables.create_variable') }}"><i class="ph ph-plus" aria-hidden="true"></i><span>Nueva variable</span></a>{% endif %}
+</header>
+
+<section class="filter-panel" aria-labelledby="variable-filters-title">
+  <h2 id="variable-filters-title" class="sr-only">Buscar y filtrar variables</h2>
+  <form class="filter-grid variable-filter-grid" method="get">
+    <div class="field field-search"><label for="q">Buscar</label><div class="input-with-icon"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="q" name="q" type="search" value="{{ filters.q }}" placeholder="Código, nombre o unidad"></div></div>
+    <div class="field"><label for="estado">Estado</label><select id="estado" name="estado"><option value="">Todas</option><option value="ACTIVAS" {% if filters.estado == 'ACTIVAS' %}selected{% endif %}>Activas</option><option value="INACTIVAS" {% if filters.estado == 'INACTIVAS' %}selected{% endif %}>Inactivas</option></select></div>
+    <div class="filter-actions"><button class="button" type="submit"><i class="ph ph-funnel-simple" aria-hidden="true"></i><span>Aplicar</span></button>{% if filters.q or filters.estado %}<a class="button button-secondary" href="{{ url_for('variables.list_variables') }}">Limpiar</a>{% endif %}</div>
+  </form>
+</section>
+
+<section class="content-section" aria-labelledby="variables-title">
+  <div class="section-heading"><h2 id="variables-title">Variables registradas</h2><p>{{ variable_items|length }} resultado{% if variable_items|length != 1 %}s{% endif %}</p></div>
+  {% if variable_items %}
+    <div class="table-scroll" tabindex="0" aria-label="Tabla de variables operativas">
+      <table class="variables-table"><thead><tr><th scope="col">Variable</th><th scope="col">Unidad</th><th scope="col">Rango permitido</th><th scope="col">Estado</th>{% if g.user.rol == 'Administrador' %}<th scope="col"><span class="sr-only">Acciones</span></th>{% endif %}</tr></thead>
+        <tbody>{% for item in variable_items %}<tr><td><strong class="table-primary">{{ item.nombre }}</strong><span class="table-secondary">{{ item.codigo }}{% if item.descripcion %} · {{ item.descripcion|truncate(60) }}{% endif %}</span></td><td>{{ item.unidad }}</td><td><span class="range-value">{{ item.valor_minimo|number }} – {{ item.valor_maximo|number }}</span></td><td><span class="status {{ 'status-active' if item.activo else 'status-inactive' }}">{{ 'Activa' if item.activo else 'Inactiva' }}</span></td>{% if g.user.rol == 'Administrador' %}<td class="table-action"><a href="{{ url_for('variables.edit_variable', variable_id=item.id_variable) }}"><i class="ph ph-pencil-simple" aria-hidden="true"></i><span>Editar</span></a></td>{% endif %}</tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state" role="status"><i class="ph ph-gauge empty-state-icon" aria-hidden="true"></i><h3>No se encontraron variables</h3><p>{{ 'Prueba con otros filtros.' if filters.q or filters.estado else 'Registra una variable antes de importar mediciones.' }}</p>{% if g.user.rol == 'Administrador' and not (filters.q or filters.estado) %}<a class="button" href="{{ url_for('variables.create_variable') }}">Nueva variable</a>{% endif %}</div>
+  {% endif %}
+</section>
+{% endblock %}

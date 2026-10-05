@@ -1,0 +1,107 @@
+{% extends "app_base.html" %}
+
+{% block title %}Inventario | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Inventario básico</p>
+    <h1>Equipos</h1>
+    <p>Consulta, registra y actualiza los equipos de la organización.</p>
+  </div>
+  <a class="button" href="{{ url_for('inventory.create_equipment') }}"><i class="ph ph-plus" aria-hidden="true"></i><span>Registrar equipo</span></a>
+</header>
+
+<section class="inventory-summary" aria-label="Resumen del inventario">
+  <div><span>Equipos visibles</span><strong>{{ equipment_items|length }}</strong></div>
+  <div><span>Operativos</span><strong>{{ equipment_items|selectattr('estado', 'equalto', 'OPERATIVO')|list|length }}</strong></div>
+  <div><span>Fuera de servicio</span><strong>{{ equipment_items|selectattr('estado', 'equalto', 'FUERA_DE_SERVICIO')|list|length }}</strong></div>
+  <div><span>Dados de baja</span><strong>{{ equipment_items|selectattr('estado', 'equalto', 'DADO_DE_BAJA')|list|length }}</strong></div>
+</section>
+
+<section class="filter-panel" aria-labelledby="filters-title">
+  <h2 id="filters-title" class="sr-only">Buscar y filtrar equipos</h2>
+  <form class="filter-grid" method="get">
+    <div class="field field-search">
+      <label for="q">Buscar</label>
+      <div class="input-with-icon"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="q" name="q" type="search" value="{{ filters.q }}" placeholder="Código, nombre, marca, modelo o serie"></div>
+    </div>
+    <div class="field">
+      <label for="categoria">Categoría</label>
+      <select id="categoria" name="categoria">
+        <option value="">Todas</option>
+        {% for category in categories %}
+          <option value="{{ category.id_categoria }}" {% if filters.categoria == category.id_categoria|string %}selected{% endif %}>{{ category.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="estado">Estado</label>
+      <select id="estado" name="estado">
+        <option value="">Todos</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if filters.estado == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button class="button" type="submit"><i class="ph ph-funnel-simple" aria-hidden="true"></i><span>Aplicar</span></button>
+      {% if filters.q or filters.categoria or filters.estado %}
+        <a class="button button-secondary" href="{{ url_for('inventory.list_equipment') }}"><i class="ph ph-x" aria-hidden="true"></i><span>Limpiar</span></a>
+      {% endif %}
+    </div>
+  </form>
+</section>
+
+<section class="content-section" aria-labelledby="results-title">
+  <div class="section-heading">
+    <h2 id="results-title">Resultados</h2>
+    <p>{{ equipment_items|length }} equipo{% if equipment_items|length != 1 %}s{% endif %}</p>
+  </div>
+
+  {% if equipment_items %}
+    <div class="table-scroll" tabindex="0" aria-label="Tabla de equipos, desplázate horizontalmente si es necesario">
+      <table class="equipment-table">
+        <caption class="sr-only">Equipos registrados en el inventario</caption>
+        <thead>
+          <tr>
+            <th scope="col">Equipo</th>
+            <th scope="col">Código</th>
+            <th scope="col">Categoría</th>
+            <th scope="col">Ubicación</th>
+            <th scope="col">Estado</th>
+            <th scope="col"><span class="sr-only">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in equipment_items %}
+            <tr>
+              <td>
+                <a class="table-primary" href="{{ url_for('inventory.equipment_detail', equipment_id=item.id_equipo) }}">{{ item.nombre }}</a>
+                <span class="table-secondary">{{ item.marca or 'Sin marca' }}{% if item.modelo %} / {{ item.modelo }}{% endif %}</span>
+              </td>
+              <td>{{ item.codigo_interno }}</td>
+              <td>{{ item.categoria }}</td>
+              <td>{{ item.ubicacion or 'Sin asignar' }}</td>
+              <td><span class="status status-{{ item.estado|lower }}">{{ dict(statuses)[item.estado] }}</span></td>
+              <td class="table-action"><a href="{{ url_for('inventory.edit_equipment', equipment_id=item.id_equipo) }}"><i class="ph ph-pencil-simple" aria-hidden="true"></i><span>Editar</span></a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state" role="status">
+      <i class="ph ph-package empty-state-icon" aria-hidden="true"></i>
+      <h3>No se encontraron equipos</h3>
+      {% if filters.q or filters.categoria or filters.estado %}
+        <p>Prueba con otros términos o limpia los filtros actuales.</p>
+        <a class="button button-secondary" href="{{ url_for('inventory.list_equipment') }}">Limpiar filtros</a>
+      {% else %}
+        <p>Registra el primer equipo para comenzar el inventario.</p>
+        <a class="button" href="{{ url_for('inventory.create_equipment') }}">Registrar equipo</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

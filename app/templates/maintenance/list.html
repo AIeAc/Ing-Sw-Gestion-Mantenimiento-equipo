@@ -1,0 +1,88 @@
+{% extends "app_base.html" %}
+
+{% block title %}Mantenimientos | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Sprint 2</p>
+    <h1>Mantenimientos</h1>
+    <p>Registra y da seguimiento a los servicios preventivos y correctivos.</p>
+  </div>
+  <a class="button" href="{{ url_for('maintenance.create_maintenance') }}"><i class="ph ph-plus" aria-hidden="true"></i><span>Registrar mantenimiento</span></a>
+</header>
+
+<section class="inventory-summary" aria-label="Resumen de mantenimientos visibles">
+  <div><span>Registros visibles</span><strong>{{ maintenance_items|length }}</strong></div>
+  <div><span>Programados</span><strong>{{ maintenance_items|selectattr('estado', 'equalto', 'PROGRAMADO')|list|length }}</strong></div>
+  <div><span>En proceso</span><strong>{{ maintenance_items|selectattr('estado', 'equalto', 'EN_PROCESO')|list|length }}</strong></div>
+  <div><span>Completados</span><strong>{{ maintenance_items|selectattr('estado', 'equalto', 'COMPLETADO')|list|length }}</strong></div>
+</section>
+
+<section class="filter-panel" aria-labelledby="filters-title">
+  <h2 id="filters-title" class="sr-only">Buscar y filtrar mantenimientos</h2>
+  <form class="filter-grid" method="get">
+    <div class="field field-search">
+      <label for="q">Buscar</label>
+      <div class="input-with-icon"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="q" name="q" type="search" value="{{ filters.q }}" placeholder="Equipo, código, descripción o técnico"></div>
+    </div>
+    <div class="field">
+      <label for="tipo">Tipo</label>
+      <select id="tipo" name="tipo">
+        <option value="">Todos</option>
+        {% for value, label in types %}<option value="{{ value }}" {% if filters.tipo == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="estado">Estado</label>
+      <select id="estado" name="estado">
+        <option value="">Todos</option>
+        {% for value, label in statuses %}<option value="{{ value }}" {% if filters.estado == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button class="button" type="submit"><i class="ph ph-funnel-simple" aria-hidden="true"></i><span>Aplicar</span></button>
+      {% if filters.q or filters.tipo or filters.estado %}<a class="button button-secondary" href="{{ url_for('maintenance.list_maintenance') }}"><i class="ph ph-x" aria-hidden="true"></i><span>Limpiar</span></a>{% endif %}
+    </div>
+  </form>
+</section>
+
+<section class="content-section" aria-labelledby="results-title">
+  <div class="section-heading">
+    <h2 id="results-title">Registros</h2>
+    <p>{{ maintenance_items|length }} mantenimiento{% if maintenance_items|length != 1 %}s{% endif %}</p>
+  </div>
+  {% if maintenance_items %}
+    <div class="table-scroll" tabindex="0" aria-label="Tabla de mantenimientos, desplázate horizontalmente si es necesario">
+      <table class="maintenance-table">
+        <caption class="sr-only">Mantenimientos registrados</caption>
+        <thead><tr><th scope="col">Mantenimiento</th><th scope="col">Equipo</th><th scope="col">Fecha</th><th scope="col">Técnico</th><th scope="col">Estado</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead>
+        <tbody>
+          {% for item in maintenance_items %}
+            <tr>
+              <td><a class="table-primary" href="{{ url_for('maintenance.maintenance_detail', maintenance_id=item.id_mantenimiento) }}">{{ dict(types)[item.tipo] }}</a><span class="table-secondary">{{ item.descripcion|truncate(55) }}</span></td>
+              <td><a class="table-primary" href="{{ url_for('maintenance.equipment_history', equipment_id=item.id_equipo) }}">{{ item.equipo }}</a><span class="table-secondary">{{ item.codigo_interno }}</span></td>
+              <td>{{ item.fecha_programada.strftime('%d/%m/%Y · %H:%M') if item.fecha_programada else 'Sin programar' }}</td>
+              <td>{{ item.tecnico }}</td>
+              <td><span class="status status-{{ item.estado|lower }}">{{ dict(statuses)[item.estado] }}</span></td>
+              <td class="table-action"><a href="{{ url_for('maintenance.edit_maintenance', maintenance_id=item.id_mantenimiento) }}"><i class="ph ph-pencil-simple" aria-hidden="true"></i><span>Editar</span></a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state" role="status">
+      <i class="ph ph-wrench empty-state-icon" aria-hidden="true"></i>
+      <h3>No se encontraron mantenimientos</h3>
+      {% if filters.q or filters.tipo or filters.estado %}
+        <p>Prueba con otros términos o limpia los filtros actuales.</p>
+        <a class="button button-secondary" href="{{ url_for('maintenance.list_maintenance') }}">Limpiar filtros</a>
+      {% else %}
+        <p>Registra el primer servicio preventivo o correctivo.</p>
+        <a class="button" href="{{ url_for('maintenance.create_maintenance') }}">Registrar mantenimiento</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

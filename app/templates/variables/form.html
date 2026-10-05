@@ -1,0 +1,23 @@
+{% extends "app_base.html" %}
+{% set creating = mode == 'create' %}
+{% block title %}{{ 'Nueva' if creating else 'Editar' }} variable | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header compact-header"><div><a class="back-link" href="{{ url_for('variables.list_variables') }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver al catálogo</span></a><h1>{{ 'Nueva variable operativa' if creating else 'Editar variable operativa' }}</h1><p>Configura la unidad y el intervalo que se considera normal.</p></div></header>
+{% if errors %}<div class="error-summary" role="alert"><h2>Revisa la información</h2><p>Hay campos que requieren atención antes de guardar.</p></div>{% endif %}
+<form class="record-form" method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <section class="form-section" aria-labelledby="variable-identification"><div class="form-section-heading"><h2 id="variable-identification">Identificación</h2><p>Usa un código breve y único para archivos de importación.</p></div><div class="form-grid">
+    <div class="field"><label for="codigo">Código <span>(obligatorio)</span></label><input id="codigo" name="codigo" value="{{ data.codigo }}" maxlength="50" required placeholder="Ej. TEMP" {% if errors.codigo %}aria-invalid="true" aria-describedby="codigo-error"{% endif %}>{% if errors.codigo %}<p class="field-error" id="codigo-error">{{ errors.codigo }}</p>{% endif %}</div>
+    <div class="field"><label for="nombre">Nombre <span>(obligatorio)</span></label><input id="nombre" name="nombre" value="{{ data.nombre }}" maxlength="100" required placeholder="Ej. Temperatura" {% if errors.nombre %}aria-invalid="true" aria-describedby="nombre-error"{% endif %}>{% if errors.nombre %}<p class="field-error" id="nombre-error">{{ errors.nombre }}</p>{% endif %}</div>
+    <div class="field"><label for="unidad">Unidad <span>(obligatorio)</span></label><input id="unidad" name="unidad" value="{{ data.unidad }}" maxlength="30" required placeholder="Ej. °C" {% if errors.unidad %}aria-invalid="true" aria-describedby="unidad-error"{% endif %}>{% if errors.unidad %}<p class="field-error" id="unidad-error">{{ errors.unidad }}</p>{% endif %}</div>
+    <div class="field field-wide"><label for="descripcion">Descripción</label><textarea id="descripcion" name="descripcion" rows="3" maxlength="255" {% if errors.descripcion %}aria-invalid="true" aria-describedby="descripcion-error"{% endif %}>{{ data.descripcion }}</textarea>{% if errors.descripcion %}<p class="field-error" id="descripcion-error">{{ errors.descripcion }}</p>{% endif %}</div>
+  </div></section>
+  <section class="form-section" aria-labelledby="variable-range"><div class="form-section-heading"><h2 id="variable-range">Rango permitido</h2><p>Una medición menor al mínimo o mayor al máximo generará una alerta.</p></div><div class="form-grid">
+    <div class="field"><label for="valor_minimo">Valor mínimo <span>(obligatorio)</span></label><input id="valor_minimo" name="valor_minimo" type="number" step="0.000001" value="{{ data.valor_minimo }}" required {% if errors.valor_minimo %}aria-invalid="true" aria-describedby="minimo-error"{% endif %}>{% if errors.valor_minimo %}<p class="field-error" id="minimo-error">{{ errors.valor_minimo }}</p>{% endif %}</div>
+    <div class="field"><label for="valor_maximo">Valor máximo <span>(obligatorio)</span></label><input id="valor_maximo" name="valor_maximo" type="number" step="0.000001" value="{{ data.valor_maximo }}" required {% if errors.valor_maximo %}aria-invalid="true" aria-describedby="maximo-error"{% endif %}>{% if errors.valor_maximo %}<p class="field-error" id="maximo-error">{{ errors.valor_maximo }}</p>{% endif %}</div>
+    {% if not creating %}<label class="check-field field-wide"><input type="checkbox" name="activo" {% if data.activo %}checked{% endif %}><span><strong>Variable activa</strong><small>Solo las variables activas aceptan nuevas mediciones.</small></span></label>{% endif %}
+  </div></section>
+  <div class="form-actions"><button class="button" type="submit"><i class="ph ph-check" aria-hidden="true"></i><span>{{ 'Crear variable' if creating else 'Guardar cambios' }}</span></button><a class="button button-secondary" href="{{ url_for('variables.list_variables') }}">Cancelar</a></div>
+</form>
+{% endblock %}

@@ -1,0 +1,59 @@
+@font-face {
+  font-family: "Phosphor";
+  src: url("../../node_modules/@phosphor-icons/web/src/regular/Phosphor.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.ph {
+  font-family: "Phosphor" !important;
+  speak: never;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 1;
+  text-transform: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ph-arrow-right::before { content: "\e06c"; }
+.ph-activity::before { content: "\e000"; }
+.ph-arrow-square-out::before { content: "\e5de"; }
+.ph-arrow-up-right::before { content: "\e092"; }
+.ph-calendar-blank::before { content: "\e10a"; }
+.ph-calendar-dots::before { content: "\e7b4"; }
+.ph-caret-left::before { content: "\e138"; }
+.ph-caret-right::before { content: "\e13a"; }
+.ph-chart-line::before { content: "\e154"; }
+.ph-chart-line-up::before { content: "\e156"; }
+.ph-check::before { content: "\e182"; }
+.ph-check-circle::before { content: "\e184"; }
+.ph-clock-counter-clockwise::before { content: "\e1a0"; }
+.ph-currency-dollar::before { content: "\e550"; }
+.ph-download-simple::before { content: "\e20c"; }
+.ph-eye::before { content: "\e220"; }
+.ph-eye-slash::before { content: "\e224"; }
+.ph-file-csv::before { content: "\eb1c"; }
+.ph-files::before { content: "\e710"; }
+.ph-funnel-simple::before { content: "\e268"; }
+.ph-gauge::before { content: "\e628"; }
+.ph-heartbeat::before { content: "\e2ac"; }
+.ph-list::before { content: "\e2f0"; }
+.ph-magnifying-glass::before { content: "\e30c"; }
+.ph-package::before { content: "\e390"; }
+.ph-pencil-simple::before { content: "\e3b4"; }
+.ph-plus::before { content: "\e3d4"; }
+.ph-shield-check::before { content: "\e40c"; }
+.ph-sign-out::before { content: "\e42a"; }
+.ph-squares-four::before { content: "\e464"; }
+.ph-tag::before { content: "\e478"; }
+.ph-upload-simple::before { content: "\e4c0"; }
+.ph-user-plus::before { content: "\e4d0"; }
+.ph-users-three::before { content: "\e68e"; }
+.ph-warning-circle::before { content: "\e4e2"; }
+.ph-warning::before { content: "\e4e0"; }
+.ph-wave-sine::before { content: "\ea9a"; }
+.ph-wrench::before { content: "\e5d4"; }
+.ph-x::before { content: "\e4f6"; }

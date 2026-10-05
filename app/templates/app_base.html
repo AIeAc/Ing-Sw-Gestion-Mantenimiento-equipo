@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block body %}
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+<button class="sidebar-overlay" type="button" data-sidebar-overlay hidden tabindex="-1" aria-label="Cerrar menú"></button>
+
+<div class="app-shell">
+  <aside class="navigation-panel" id="menu-principal" data-sidebar data-open="false">
+    <a class="app-brand" href="{{ url_for('dashboard.index') }}" aria-label="Mantenimiento Predictivo, dashboard">
+      <span class="app-brand-mark" aria-hidden="true"><i class="ph ph-heartbeat"></i></span>
+      <span class="app-brand-copy"><strong>Mantto</strong><small>Operaciones</small></span>
+    </a>
+
+    <nav class="primary-nav" aria-label="Navegación principal">
+      <a href="{{ url_for('dashboard.index') }}" {% if request.blueprint == 'dashboard' %}aria-current="page"{% endif %}>
+        <i class="ph ph-squares-four nav-icon" aria-hidden="true"></i><span>Dashboard</span>
+      </a>
+      <a href="{{ url_for('inventory.list_equipment') }}" {% if request.blueprint == 'inventory' %}aria-current="page"{% endif %}>
+        <i class="ph ph-package nav-icon" aria-hidden="true"></i><span>Inventario</span>
+      </a>
+      <a href="{{ url_for('maintenance.list_maintenance') }}" {% if request.blueprint == 'maintenance' and request.endpoint != 'maintenance.maintenance_calendar' %}aria-current="page"{% endif %}>
+        <i class="ph ph-wrench nav-icon" aria-hidden="true"></i><span>Mantenimientos</span>
+      </a>
+      <a href="{{ url_for('maintenance.maintenance_calendar') }}" {% if request.endpoint == 'maintenance.maintenance_calendar' %}aria-current="page"{% endif %}>
+        <i class="ph ph-calendar-dots nav-icon" aria-hidden="true"></i><span>Calendario</span>
+      </a>
+      <a href="{{ url_for('measurements.list_measurements') }}" {% if request.blueprint == 'measurements' %}aria-current="page"{% endif %}>
+        <i class="ph ph-wave-sine nav-icon" aria-hidden="true"></i><span>Mediciones</span>
+      </a>
+      <a href="{{ url_for('alerts.list_alerts') }}" {% if request.blueprint == 'alerts' %}aria-current="page"{% endif %}>
+        <i class="ph ph-warning-circle nav-icon" aria-hidden="true"></i><span>Alertas</span>
+      </a>
+      <a href="{{ url_for('variables.list_variables') }}" {% if request.blueprint == 'variables' %}aria-current="page"{% endif %}>
+        <i class="ph ph-gauge nav-icon" aria-hidden="true"></i><span>Variables</span>
+      </a>
+      {% if g.user.rol == 'Administrador' %}
+        <a href="{{ url_for('classifications.list_categories') }}" {% if request.blueprint == 'classifications' %}aria-current="page"{% endif %}>
+          <i class="ph ph-tag nav-icon" aria-hidden="true"></i><span>Clasificaciones</span>
+        </a>
+        <a href="{{ url_for('admin.list_users') }}" {% if request.blueprint == 'admin' %}aria-current="page"{% endif %}>
+          <i class="ph ph-users-three nav-icon" aria-hidden="true"></i><span>Usuarios y roles</span>
+        </a>
+      {% endif %}
+    </nav>
+
+    <div class="sidebar-meta">
+      <span>Sprint 3</span>
+      <small>Monitoreo operativo</small>
+    </div>
+  </aside>
+
+  <div class="workspace">
+    <header class="topbar">
+      <div class="topbar-leading">
+        <button class="menu-toggle" type="button" data-menu-toggle aria-controls="menu-principal" aria-expanded="false" aria-label="Abrir menú">
+          <i class="ph ph-list" aria-hidden="true"></i>
+        </button>
+        <div class="topbar-context">
+          <span>Centro de control</span>
+          <strong>
+            {% if request.blueprint == 'dashboard' %}Dashboard{% elif request.blueprint == 'measurements' %}Mediciones{% elif request.blueprint == 'alerts' %}Alertas{% elif request.blueprint == 'variables' %}Variables operativas{% elif request.endpoint == 'maintenance.maintenance_calendar' %}Calendario{% elif request.blueprint == 'maintenance' %}Mantenimientos{% elif request.blueprint == 'inventory' %}Inventario{% elif request.blueprint == 'classifications' %}Clasificaciones{% else %}Usuarios y roles{% endif %}
+          </strong>
+        </div>
+      </div>
+
+      <div class="topbar-session">
+        <div class="session-user">
+          <span class="avatar" aria-hidden="true">{{ g.user.nombre[0] }}{{ g.user.apellidos[0] }}</span>
+          <span><strong>{{ g.user.nombre }} {{ g.user.apellidos }}</strong><small>{{ g.user.rol }}</small></span>
+        </div>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="text-button icon-logout" type="submit" aria-label="Cerrar sesión">
+            <i class="ph ph-sign-out" aria-hidden="true"></i><span>Salir</span>
+          </button>
+        </form>
+      </div>
+    </header>
+
+    <main class="app-main" id="contenido" tabindex="-1">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="messages" aria-live="polite">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}" role="status">
+                <i class="ph {{ 'ph-check-circle' if category == 'success' else 'ph-warning-circle' }}" aria-hidden="true"></i>
+                <span>{{ message }}</span>
+                <button class="alert-close" type="button" data-alert-close aria-label="Cerrar mensaje"><i class="ph ph-x" aria-hidden="true"></i></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

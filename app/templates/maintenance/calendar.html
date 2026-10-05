@@ -1,0 +1,42 @@
+{% extends "app_base.html" %}
+
+{% block title %}Calendario de mantenimientos | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div><p class="eyebrow">Planificación</p><h1>Calendario</h1><p>Consulta los mantenimientos programados por fecha.</p></div>
+  <a class="button" href="{{ url_for('maintenance.create_maintenance') }}"><i class="ph ph-plus" aria-hidden="true"></i><span>Registrar mantenimiento</span></a>
+</header>
+
+<section class="calendar-panel" aria-labelledby="calendar-title">
+  <div class="calendar-toolbar">
+    <a class="icon-button" href="{{ url_for('maintenance.maintenance_calendar', mes=previous_month) }}" aria-label="Ver mes anterior"><i class="ph ph-caret-left" aria-hidden="true"></i></a>
+    <div><p class="eyebrow">Mes seleccionado</p><h2 id="calendar-title">{{ month_label|capitalize }}</h2></div>
+    <a class="icon-button" href="{{ url_for('maintenance.maintenance_calendar', mes=next_month) }}" aria-label="Ver mes siguiente"><i class="ph ph-caret-right" aria-hidden="true"></i></a>
+  </div>
+  <div class="calendar-scroll" tabindex="0" aria-label="Calendario mensual, desplázate horizontalmente si es necesario">
+    <div class="month-calendar" role="grid" aria-labelledby="calendar-title">
+      {% for weekday in ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] %}<div class="calendar-weekday" role="columnheader">{{ weekday }}</div>{% endfor %}
+      {% for week in weeks %}
+        {% for day in week %}
+          <div class="calendar-day{% if day == 0 %} calendar-day-empty{% endif %}" role="gridcell"{% if day %} aria-label="{{ day }} de {{ month_label }}"{% endif %}>
+            {% if day %}
+              <span class="day-number">{{ day }}</span>
+              <div class="day-events">
+                {% for entry in entries_by_day.get(day, []) %}
+                  <a class="calendar-event event-{{ entry.tipo|lower }}" href="{{ url_for('maintenance.maintenance_detail', maintenance_id=entry.id_mantenimiento) }}">
+                    <time datetime="{{ entry.fecha_programada.isoformat() }}">{{ entry.fecha_programada.strftime('%H:%M') }}</time>
+                    <strong>{{ entry.equipo }}</strong>
+                    <span>{{ 'Preventivo' if entry.tipo == 'PREVENTIVO' else 'Correctivo' }} · {{ statuses[entry.estado] }}</span>
+                  </a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+  {% if not entries %}<div class="calendar-empty" role="status"><i class="ph ph-calendar-blank" aria-hidden="true"></i><span>No hay mantenimientos programados en este mes.</span></div>{% endif %}
+</section>
+{% endblock %}

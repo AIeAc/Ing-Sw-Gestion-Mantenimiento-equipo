@@ -1,0 +1,115 @@
+{% extends "app_base.html" %}
+
+{% set creating = mode == 'create' %}
+{% block title %}{{ 'Registrar' if creating else 'Editar' }} equipo | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header compact-header">
+  <div>
+    <a class="back-link" href="{{ url_for('inventory.list_equipment') }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver al inventario</span></a>
+    <h1>{{ 'Registrar equipo' if creating else 'Editar equipo' }}</h1>
+    <p>{{ 'Agrega la información básica del activo.' if creating else 'Actualiza los datos del activo seleccionado.' }}</p>
+  </div>
+</header>
+
+{% if errors %}
+  <div class="error-summary" role="alert" tabindex="-1">
+    <h2>Revisa la información</h2>
+    <p>Hay campos que requieren atención antes de guardar.</p>
+  </div>
+{% endif %}
+
+<form class="record-form" method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <section class="form-section" aria-labelledby="identification-title">
+    <div class="form-section-heading">
+      <h2 id="identification-title">Identificación</h2>
+      <p>Datos necesarios para reconocer el equipo.</p>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="codigo_interno">Código interno <span>(obligatorio)</span></label>
+        <input id="codigo_interno" name="codigo_interno" value="{{ data.codigo_interno }}" maxlength="50" required {% if errors.codigo_interno %}aria-invalid="true" aria-describedby="codigo-error"{% endif %}>
+        {% if errors.codigo_interno %}<p class="field-error" id="codigo-error">{{ errors.codigo_interno }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label for="nombre">Nombre <span>(obligatorio)</span></label>
+        <input id="nombre" name="nombre" value="{{ data.nombre }}" maxlength="150" required {% if errors.nombre %}aria-invalid="true" aria-describedby="nombre-error"{% endif %}>
+        {% if errors.nombre %}<p class="field-error" id="nombre-error">{{ errors.nombre }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label for="id_categoria">Categoría <span>(obligatorio)</span></label>
+        <select id="id_categoria" name="id_categoria" required {% if errors.id_categoria %}aria-invalid="true" aria-describedby="categoria-error"{% endif %}>
+          <option value="">Selecciona una categoría</option>
+          {% for category in categories %}
+            <option value="{{ category.id_categoria }}" {% if data.id_categoria == category.id_categoria|string %}selected{% endif %}>{{ category.nombre }}</option>
+          {% endfor %}
+        </select>
+        {% if errors.id_categoria %}<p class="field-error" id="categoria-error">{{ errors.id_categoria }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label for="estado">Estado <span>(obligatorio)</span></label>
+        <select id="estado" name="estado" required {% if errors.estado %}aria-invalid="true" aria-describedby="estado-error"{% endif %}>
+          {% for value, label in statuses %}
+            <option value="{{ value }}" {% if data.estado == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        {% if errors.estado %}<p class="field-error" id="estado-error">{{ errors.estado }}</p>{% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="form-section" aria-labelledby="technical-title">
+    <div class="form-section-heading">
+      <h2 id="technical-title">Datos del fabricante</h2>
+      <p>Información opcional para distinguir modelos y unidades.</p>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="marca">Marca</label>
+        <input id="marca" name="marca" value="{{ data.marca }}" maxlength="100" {% if errors.marca %}aria-invalid="true" aria-describedby="marca-error"{% endif %}>
+        {% if errors.marca %}<p class="field-error" id="marca-error">{{ errors.marca }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label for="modelo">Modelo</label>
+        <input id="modelo" name="modelo" value="{{ data.modelo }}" maxlength="100" {% if errors.modelo %}aria-invalid="true" aria-describedby="modelo-error"{% endif %}>
+        {% if errors.modelo %}<p class="field-error" id="modelo-error">{{ errors.modelo }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label for="numero_serie">Número de serie</label>
+        <input id="numero_serie" name="numero_serie" value="{{ data.numero_serie }}" maxlength="100" {% if errors.numero_serie %}aria-invalid="true" aria-describedby="serie-error"{% endif %}>
+        {% if errors.numero_serie %}<p class="field-error" id="serie-error">{{ errors.numero_serie }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label for="fecha_adquisicion">Fecha de adquisición</label>
+        <input id="fecha_adquisicion" name="fecha_adquisicion" type="date" value="{{ data.fecha_adquisicion }}" {% if errors.fecha_adquisicion %}aria-invalid="true" aria-describedby="fecha-error"{% endif %}>
+        {% if errors.fecha_adquisicion %}<p class="field-error" id="fecha-error">{{ errors.fecha_adquisicion }}</p>{% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="form-section" aria-labelledby="location-title">
+    <div class="form-section-heading">
+      <h2 id="location-title">Ubicación y notas</h2>
+      <p>Contexto operativo básico del activo.</p>
+    </div>
+    <div class="form-grid">
+      <div class="field field-wide">
+        <label for="ubicacion">Ubicación</label>
+        <input id="ubicacion" name="ubicacion" value="{{ data.ubicacion }}" maxlength="150" placeholder="Ej. Planta 1, línea A" {% if errors.ubicacion %}aria-invalid="true" aria-describedby="ubicacion-error"{% endif %}>
+        {% if errors.ubicacion %}<p class="field-error" id="ubicacion-error">{{ errors.ubicacion }}</p>{% endif %}
+      </div>
+      <div class="field field-wide">
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" name="descripcion" rows="4">{{ data.descripcion }}</textarea>
+      </div>
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <button class="button" type="submit"><i class="ph ph-check" aria-hidden="true"></i><span>{{ 'Registrar equipo' if creating else 'Guardar cambios' }}</span></button>
+    <a class="button button-secondary" href="{{ url_for('inventory.equipment_detail', equipment_id=item.id_equipo) if not creating else url_for('inventory.list_equipment') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

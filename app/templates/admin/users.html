@@ -1,0 +1,30 @@
+{% extends "app_base.html" %}
+
+{% block title %}Usuarios y roles | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div><p class="eyebrow">Administración</p><h1>Usuarios y roles</h1><p>Controla quién puede acceder y el rol asignado a cada persona.</p></div>
+  <a class="button" href="{{ url_for('admin.create_user') }}"><i class="ph ph-user-plus" aria-hidden="true"></i><span>Nuevo usuario</span></a>
+</header>
+
+<section class="content-section" aria-labelledby="users-title">
+  <div class="section-heading"><h2 id="users-title">Usuarios</h2><p>{{ users|length }} registrados</p></div>
+  <div class="table-scroll" tabindex="0" aria-label="Tabla de usuarios y roles">
+    <table>
+      <thead><tr><th scope="col">Usuario</th><th scope="col">Rol</th><th scope="col">Último acceso</th><th scope="col">Estado</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead>
+      <tbody>
+        {% for user in users %}
+          <tr>
+            <td><strong class="table-primary">{{ user.nombre }} {{ user.apellidos }}</strong><span class="table-secondary">{{ user.correo }}</span></td>
+            <td>{{ user.rol }}</td>
+            <td>{{ user.ultimo_acceso.strftime('%d/%m/%Y %H:%M') if user.ultimo_acceso else 'Sin accesos' }}</td>
+            <td><span class="status {{ 'status-active' if user.activo else 'status-inactive' }}">{{ 'Activo' if user.activo else 'Inactivo' }}</span></td>
+            <td class="table-action"><a href="{{ url_for('admin.edit_user', user_id=user.id_usuario) }}"><i class="ph ph-pencil-simple" aria-hidden="true"></i><span>Editar</span></a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "app_base.html" %}
+
+{% block title %}Historial de {{ item.nombre }} | Mantenimiento Predictivo{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div>
+    <a class="back-link" href="{{ url_for('inventory.equipment_detail', equipment_id=item.id_equipo) }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver al equipo</span></a>
+    <p class="eyebrow">{{ item.codigo_interno }}</p>
+    <h1>Historial de mantenimiento</h1>
+    <p>{{ item.nombre }} · {{ item.categoria }}</p>
+  </div>
+  <a class="button" href="{{ url_for('maintenance.create_maintenance', equipo=item.id_equipo) }}"><i class="ph ph-plus" aria-hidden="true"></i><span>Registrar mantenimiento</span></a>
+</header>
+
+<section class="content-section" aria-labelledby="history-title">
+  <div class="section-heading"><h2 id="history-title">Servicios del equipo</h2><p>{{ maintenance_items|length }} registro{% if maintenance_items|length != 1 %}s{% endif %}</p></div>
+  {% if maintenance_items %}
+    <ol class="history-list">
+      {% for maintenance_item in maintenance_items %}
+        <li>
+          <div class="history-marker" aria-hidden="true"><i class="ph {{ 'ph-check' if maintenance_item.estado == 'COMPLETADO' else 'ph-wrench' }}"></i></div>
+          <article>
+            <div class="history-heading">
+              <div><p class="history-date">{{ maintenance_item.fecha_referencia.strftime('%d/%m/%Y · %H:%M') }}</p><h3><a href="{{ url_for('maintenance.maintenance_detail', maintenance_id=maintenance_item.id_mantenimiento) }}">{{ types[maintenance_item.tipo] }}</a></h3></div>
+              <span class="status status-{{ maintenance_item.estado|lower }}">{{ statuses[maintenance_item.estado] }}</span>
+            </div>
+            <p>{{ maintenance_item.descripcion }}</p>
+            <dl class="history-meta"><div><dt>Técnico</dt><dd>{{ maintenance_item.tecnico }}</dd></div><div><dt>Costo</dt><dd>{{ '$ {:,.2f}'.format(maintenance_item.costo) if maintenance_item.costo is not none else 'No registrado' }}</dd></div></dl>
+          </article>
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <div class="empty-state" role="status"><i class="ph ph-clock-counter-clockwise empty-state-icon" aria-hidden="true"></i><h3>Este equipo aún no tiene historial</h3><p>Registra su primer mantenimiento preventivo o correctivo.</p><a class="button" href="{{ url_for('maintenance.create_maintenance', equipo=item.id_equipo) }}">Registrar mantenimiento</a></div>
+  {% endif %}
+</section>
+{% endblock %}
