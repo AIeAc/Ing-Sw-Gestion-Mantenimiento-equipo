@@ -1,7 +1,7 @@
 {% extends "app_base.html" %}
 
 {% set creating = mode == 'create' %}
-{% block title %}{{ 'Nuevo' if creating else 'Editar' }} usuario | Mantenimiento Predictivo{% endblock %}
+{% block title %}{{ 'Nuevo' if creating else 'Editar' }} usuario | Nautilus{% endblock %}
 
 {% block content %}
 <header class="page-header compact-header"><div><a class="back-link" href="{{ url_for('admin.list_users') }}">Volver a usuarios</a><h1>{{ 'Nuevo usuario' if creating else 'Editar usuario' }}</h1><p>{{ 'Crea una cuenta y asigna su nivel de acceso.' if creating else 'Actualiza los datos y permisos de la cuenta.' }}</p></div></header>

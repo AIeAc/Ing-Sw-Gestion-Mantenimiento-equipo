@@ -1,24 +1,34 @@
 {% extends "base.html" %}
 
-{% block title %}Iniciar sesión | Mantenimiento Predictivo{% endblock %}
+{% block title %}Iniciar sesión | Nautilus{% endblock %}
 
 {% block body %}
 <main class="login-layout">
   <section class="brand-panel" aria-label="Presentación del sistema">
     <div class="brand-content">
-      <span class="brand-mark" aria-hidden="true">MP</span>
+      <div class="login-brand">
+        <span class="brand-mark" aria-hidden="true"><img class="brand-logo" src="{{ url_for('static', filename='brand/nautilus-mark.svg') }}" alt=""></span>
+        <span><strong>Nautilus</strong><small>Operaciones</small></span>
+      </div>
       <p class="eyebrow">Control operativo</p>
-      <p class="brand-title">Mantenimiento<br>Predictivo</p>
-      <p class="brand-copy">Inventario organizado, acceso por roles y datos de equipos en un solo espacio.</p>
-      <div class="brand-assurance"><i class="ph ph-shield-check" aria-hidden="true"></i><span>Acceso protegido para tu equipo</span></div>
+      <p class="brand-title">Todo tu mantenimiento,<br>en un solo lugar.</p>
+      <p class="brand-copy">Consulta equipos, mediciones y alertas con una vista clara del estado de la operación.</p>
+
+      <div class="login-features" aria-label="Funciones principales">
+        <div><i class="ph ph-package" aria-hidden="true"></i><span><strong>Equipos</strong><small>Inventario organizado</small></span></div>
+        <div><i class="ph ph-wave-sine" aria-hidden="true"></i><span><strong>Mediciones</strong><small>Variables operativas</small></span></div>
+        <div><i class="ph ph-warning-circle" aria-hidden="true"></i><span><strong>Alertas</strong><small>Seguimiento oportuno</small></span></div>
+      </div>
+
+      <div class="brand-assurance"><i class="ph ph-shield-check" aria-hidden="true"></i><span>Acceso protegido para tu equipo</span><small>Sprint 3</small></div>
     </div>
   </section>
 
   <section class="form-panel">
     <div class="login-card">
       <p class="eyebrow">Bienvenido</p>
-      <h1>Iniciar sesión</h1>
-      <p class="supporting-copy">Ingresa tus credenciales para continuar.</p>
+      <h1 id="login-title">Iniciar sesión</h1>
+      <p class="supporting-copy">Ingresa tus credenciales para acceder al centro de control.</p>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
@@ -30,7 +40,7 @@
         {% endfor %}
       {% endwith %}
 
-      <form method="post" novalidate>
+      <form method="post" novalidate aria-labelledby="login-title">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <label for="correo">Correo electrónico</label>

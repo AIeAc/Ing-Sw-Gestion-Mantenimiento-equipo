@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}{{ title }} | Mantenimiento Predictivo{% endblock %}
+{% block title %}{{ title }} | Nautilus{% endblock %}
 
 {% block body %}
 <main class="error-page">
   <div>
-    <span class="app-brand-mark" aria-hidden="true">MP</span>
+    <span class="app-brand-mark" aria-hidden="true"><img class="brand-logo" src="{{ url_for('static', filename='brand/nautilus-mark.svg') }}" alt=""></span>
     <p class="error-code">Error {{ status_code }}</p>
     <h1>{{ title }}</h1>
     <p>{{ message }}</p>

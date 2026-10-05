@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Símbolo de Nautilus</title>
+  <desc id="desc">Una letra N continua que representa el flujo de datos operativos.</desc>
+  <path
+    d="M12 45V22c0-3 3.5-4.5 5.8-2.6l28.4 25.2C48.5 46.5 52 45 52 42V19"
+    fill="none"
+    stroke="#4D5FD1"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="5"
+  />
+  <circle cx="52" cy="19" r="3.5" fill="#42A884"/>
+</svg>

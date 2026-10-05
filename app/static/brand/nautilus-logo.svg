@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 112" role="img" aria-labelledby="title desc">
+  <title id="title">Nautilus Operaciones</title>
+  <desc id="desc">Logotipo del sistema de gestión de mantenimiento.</desc>
+  <rect x="4" y="4" width="104" height="104" rx="30" fill="#F8F9FF" stroke="#E2E6F1" stroke-width="2"/>
+  <path
+    d="M24 78V38c0-5 5.8-7.5 9.7-4.3l44.6 40.6C82.2 77.5 88 75 88 70V34"
+    fill="none"
+    stroke="#4D5FD1"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="8"
+  />
+  <circle cx="88" cy="34" r="5.5" fill="#42A884"/>
+  <text x="132" y="59" fill="#18192C" font-family="Aptos, 'SF Pro Display', Arial, sans-serif" font-size="38" font-weight="750" letter-spacing="-1.2">Nautilus</text>
+  <text x="134" y="82" fill="#666B80" font-family="Aptos, 'SF Pro Display', Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="2.7">OPERACIONES</text>
+</svg>

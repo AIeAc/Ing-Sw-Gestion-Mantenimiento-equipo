@@ -1,5 +1,5 @@
 {% extends "app_base.html" %}
-{% block title %}Alerta de {{ item.variable }} | Mantenimiento Predictivo{% endblock %}
+{% block title %}Alerta de {{ item.variable }} | Nautilus{% endblock %}
 
 {% block content %}
 <header class="page-header"><div><a class="back-link" href="{{ url_for('alerts.list_alerts') }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver a alertas</span></a><p class="eyebrow">{{ types[item.tipo] }}</p><h1>{{ item.variable }} fuera de rango</h1><p>{{ item.equipo }} · {{ item.codigo_interno }}</p></div><span class="status status-large status-{{ item.estado|lower }}">{{ statuses[item.estado] }}</span></header>

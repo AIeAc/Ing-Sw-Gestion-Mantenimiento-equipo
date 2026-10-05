@@ -114,38 +114,86 @@ a {
 .login-layout {
   display: grid;
   min-height: 100dvh;
-  grid-template-columns: minmax(20rem, 0.95fr) minmax(30rem, 1.05fr);
-  background: var(--color-canvas);
+  grid-template-columns: minmax(28rem, 1.15fr) minmax(28rem, 0.85fr);
+  background:
+    radial-gradient(circle at 12% 15%, rgba(181, 191, 255, 0.78), transparent 36%),
+    radial-gradient(circle at 88% 82%, rgba(199, 238, 220, 0.72), transparent 34%),
+    var(--color-canvas);
 }
 
 .brand-panel {
   position: relative;
   overflow: hidden;
   display: flex;
-  align-items: flex-end;
-  padding: clamp(2.5rem, 7vw, 7rem);
-  color: #f9f7ff;
-  background:
-    radial-gradient(circle at 18% 15%, rgba(221, 204, 255, 0.28), transparent 30%),
-    radial-gradient(circle at 88% 80%, rgba(255, 156, 174, 0.2), transparent 28%),
-    #56349a;
+  align-items: center;
+  padding: clamp(2rem, 5vh, 4rem) clamp(2.5rem, 7vw, 7rem);
+  color: var(--color-text);
+  border-right: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(238, 241, 251, 0.48);
+}
+
+.brand-panel::before {
+  position: absolute;
+  width: 34rem;
+  height: 34rem;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 50%;
+  content: "";
+  top: -18rem;
+  right: -10rem;
+  box-shadow:
+    0 0 0 4rem rgba(255, 255, 255, 0.1),
+    0 0 0 8rem rgba(255, 255, 255, 0.08);
 }
 
 .brand-content {
-  max-width: 32rem;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 39rem;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: clamp(2rem, 5vh, 3.5rem);
+}
+
+.login-brand > span:last-child,
+.login-brand strong,
+.login-brand small {
+  display: block;
+}
+
+.login-brand strong {
+  font-size: 1rem;
+  letter-spacing: -0.025em;
+}
+
+.login-brand small {
+  margin-top: -0.1rem;
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
 }
 
 .brand-mark {
   display: inline-grid;
-  width: 3.25rem;
-  height: 3.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
   place-items: center;
-  margin-bottom: 2rem;
-  border-radius: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  border-radius: 0.9rem;
   color: var(--color-primary);
-  background: #f8f5ff;
-  font-weight: 800;
-  letter-spacing: -0.05em;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 0.75rem 1.8rem rgba(76, 91, 181, 0.12);
+  font-size: 1.3rem;
+}
+
+.brand-logo {
+  display: block;
+  width: 72%;
+  height: 72%;
 }
 
 .eyebrow {
@@ -158,63 +206,117 @@ a {
 }
 
 .brand-panel .eyebrow {
-  color: #e6dcff;
+  color: var(--color-primary-hover);
 }
 
 .brand-title {
   margin: 0;
-  font-size: clamp(2.7rem, 5vw, 5.8rem);
-  font-weight: 750;
-  line-height: 0.96;
+  max-width: 12ch;
+  font-size: clamp(3rem, 5vw, 5.5rem);
+  font-weight: 680;
+  line-height: 0.98;
   letter-spacing: -0.055em;
 }
 
 .brand-copy {
-  max-width: 27rem;
-  margin: 2rem 0 0;
-  color: #e6def4;
-  font-size: 1.05rem;
+  max-width: 34rem;
+  margin: 1.5rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+}
+
+.login-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+}
+
+.login-features > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.65rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.56);
+  box-shadow: 0 0.75rem 1.75rem rgba(73, 83, 135, 0.07);
+}
+
+.login-features .ph {
+  color: var(--color-primary);
+  font-size: 1.25rem;
+}
+
+.login-features strong,
+.login-features small {
+  display: block;
+}
+
+.login-features strong {
+  font-size: 0.8rem;
+}
+
+.login-features small {
+  overflow: hidden;
+  margin-top: 0.1rem;
+  color: var(--color-text-muted);
+  font-size: 0.67rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .brand-assurance {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  margin-top: 2rem;
-  color: #f0eafd;
-  font-size: 0.84rem;
+  margin-top: 1.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
   font-weight: 650;
 }
 
 .brand-assurance .ph {
+  color: var(--color-primary);
   font-size: 1.3rem;
+}
+
+.brand-assurance small {
+  margin-left: auto;
+  padding: 0.3rem 0.5rem;
+  border-radius: 999px;
+  color: var(--color-primary-hover);
+  background: rgba(255, 255, 255, 0.66);
+  font-size: 0.65rem;
 }
 
 .form-panel {
   display: grid;
   place-items: center;
-  padding: 2rem;
-  background: #faf9fc;
+  padding: clamp(1.5rem, 5vw, 5rem);
+  background: rgba(237, 241, 248, 0.42);
 }
 
 .login-card {
-  width: min(100%, 27rem);
-  padding: clamp(1.75rem, 4vw, 2.5rem);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-panel);
-  background: var(--color-surface);
-  box-shadow: 0 1.5rem 4rem rgba(72, 51, 107, 0.1);
+  width: min(100%, 30rem);
+  padding: clamp(2rem, 4vw, 3rem);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    0 2rem 5rem rgba(70, 78, 136, 0.14),
+    inset 0 1px 0 #ffffff;
 }
 
 .login-card h1 {
   margin: 0;
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(2rem, 4vw, 2.75rem);
   line-height: 1.1;
   letter-spacing: -0.045em;
 }
 
 .supporting-copy {
-  margin: 0.8rem 0 2rem;
+  margin: 0.65rem 0 2rem;
   color: var(--color-text-muted);
 }
 
@@ -228,6 +330,11 @@ a {
 .login-card input,
 .login-card form > .button {
   width: 100%;
+}
+
+.login-card input {
+  min-height: 3rem;
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .password-field {
@@ -261,7 +368,8 @@ a {
 }
 
 .login-card form > .button {
-  margin-top: 1.5rem;
+  min-height: 3rem;
+  margin-top: 1.75rem;
 }
 
 /* Estructura principal */
@@ -2197,15 +2305,43 @@ input[type="file"]::file-selector-button {
   }
 
   .brand-mark {
-    margin-bottom: 1rem;
+    margin-bottom: 0;
   }
 
   .brand-copy {
     display: none;
   }
 
+  .login-brand {
+    margin-bottom: 2rem;
+  }
+
+  .login-features {
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .login-features > div {
+    place-items: center;
+    gap: 0.4rem;
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+  }
+
+  .login-features small {
+    display: none;
+  }
+
+  .brand-assurance {
+    margin-top: 1rem;
+  }
+
   .form-panel {
-    padding: 3rem 1.5rem;
+    padding: 2rem 1rem;
+  }
+
+  .login-card {
+    padding: 1.75rem;
   }
 
   .app-shell {
@@ -3155,7 +3291,7 @@ textarea:focus {
 /* Dirección visual Clinexa: soft structuralism y rail lateral compacto */
 
 body {
-  padding: 1rem;
+  padding: 0;
   background:
     radial-gradient(circle at 12% 15%, rgba(181, 191, 255, 0.74), transparent 36%),
     radial-gradient(circle at 88% 82%, rgba(199, 238, 220, 0.7), transparent 34%),
@@ -3164,17 +3300,15 @@ body {
 
 .app-shell {
   display: grid;
-  width: min(100%, 118rem);
-  min-height: calc(100dvh - 2rem);
+  width: 100%;
+  min-height: 100dvh;
   grid-template-columns: 4.75rem minmax(0, 1fr);
-  margin: 0 auto;
+  margin: 0;
   overflow: clip;
-  border: 0.4rem solid rgba(169, 179, 225, 0.54);
-  border-radius: 2rem;
+  border: 0;
+  border-radius: 0;
   background: #edf1f8;
-  box-shadow:
-    0 2rem 5rem rgba(70, 78, 136, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: none;
 }
 
 .navigation-panel {
@@ -3724,12 +3858,12 @@ textarea:focus {
 @media (min-width: 48.001rem) {
   .navigation-panel {
     position: sticky !important;
-    top: 1rem !important;
+    top: 0 !important;
     bottom: auto !important;
     left: auto !important;
     width: auto !important;
-    height: calc(100dvh - 2.8rem) !important;
-    max-height: calc(100dvh - 2.8rem);
+    height: 100dvh !important;
+    max-height: 100dvh;
     align-self: start;
     overflow-y: auto;
     scrollbar-width: thin;

@@ -1,6 +1,6 @@
 {% extends "app_base.html" %}
 {% set creating = mode == 'create' %}
-{% block title %}{{ 'Nueva' if creating else 'Editar' }} variable | Mantenimiento Predictivo{% endblock %}
+{% block title %}{{ 'Nueva' if creating else 'Editar' }} variable | Nautilus{% endblock %}
 
 {% block content %}
 <header class="page-header compact-header"><div><a class="back-link" href="{{ url_for('variables.list_variables') }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver al catálogo</span></a><h1>{{ 'Nueva variable operativa' if creating else 'Editar variable operativa' }}</h1><p>Configura la unidad y el intervalo que se considera normal.</p></div></header>
