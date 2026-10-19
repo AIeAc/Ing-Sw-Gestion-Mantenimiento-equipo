@@ -1,7 +1,7 @@
 import csv
 import io
 from datetime import date, datetime, timedelta
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from flask import (
     Blueprint,
@@ -29,6 +29,109 @@ REQUIRED_COLUMNS = {
     "medido_en",
 }
 MAX_CSV_ROWS = 2000
+
+
+def _build_measurement_analysis(items):
+    """Resume un conjunto homogéneo de mediciones sin realizar predicciones."""
+    if not items:
+        return None
+
+    chronological = list(reversed(items))
+    values = [Decimal(str(item["valor"])) for item in chronological]
+    first = chronological[0]
+    latest = chronological[-1]
+    minimum = Decimal(str(latest["valor_minimo"]))
+    maximum = Decimal(str(latest["valor_maximo"]))
+    allowed_span = maximum - minimum
+    average = (sum(values, Decimal("0")) / len(values)).quantize(
+        Decimal("0.01"), rounding=ROUND_HALF_UP
+    )
+    below = sum(value < minimum for value in values)
+    above = sum(value > maximum for value in values)
+    normal = len(values) - below - above
+    compliance = (Decimal(normal) * Decimal("100") / len(values)).quantize(
+        Decimal("0.1"), rounding=ROUND_HALF_UP
+    )
+
+    delta = values[-1] - values[0]
+    stable_margin = abs(allowed_span) * Decimal("0.02")
+    if abs(delta) <= stable_margin:
+        direction = "stable"
+        direction_label = "Estable"
+    elif delta > 0:
+        direction = "up"
+        direction_label = "Al alza"
+    else:
+        direction = "down"
+        direction_label = "A la baja"
+
+    change_percent = None
+    if values[0] != 0:
+        change_percent = (delta * Decimal("100") / abs(values[0])).quantize(
+            Decimal("0.1"), rounding=ROUND_HALF_UP
+        )
+
+    range_position = Decimal("50")
+    if allowed_span > 0:
+        range_position = (values[-1] - minimum) * Decimal("100") / allowed_span
+
+    latest_out_of_range = values[-1] < minimum or values[-1] > maximum
+    if latest_out_of_range:
+        decision = {
+            "level": "alert",
+            "title": "Revisión inmediata",
+            "message": "La lectura más reciente está fuera del rango permitido. Conviene verificar el equipo y el origen de la medición.",
+        }
+    elif below or above:
+        decision = {
+            "level": "warning",
+            "title": "Revisar las desviaciones",
+            "message": f"Se detectaron {below + above} lecturas fuera de rango en el periodo. Consulta los puntos rojos y valida si existe un patrón operativo.",
+        }
+    elif direction == "up" and range_position >= Decimal("80"):
+        decision = {
+            "level": "warning",
+            "title": "Vigilar el límite superior",
+            "message": "La serie subió durante el periodo y la última lectura se encuentra en el tramo superior del rango permitido.",
+        }
+    elif direction == "down" and range_position <= Decimal("20"):
+        decision = {
+            "level": "warning",
+            "title": "Vigilar el límite inferior",
+            "message": "La serie bajó durante el periodo y la última lectura se encuentra en el tramo inferior del rango permitido.",
+        }
+    else:
+        decision = {
+            "level": "success",
+            "title": "Comportamiento dentro de rango",
+            "message": "Las lecturas del periodo permanecen dentro de los límites configurados. Mantén el seguimiento habitual.",
+        }
+
+    return {
+        "equipment": latest["equipo"],
+        "equipment_code": latest["codigo_interno"],
+        "variable": latest["variable"],
+        "unit": latest["unidad"],
+        "count": len(values),
+        "latest": values[-1],
+        "latest_at": latest["medido_en"],
+        "average": average,
+        "observed_minimum": min(values),
+        "observed_maximum": max(values),
+        "allowed_minimum": minimum,
+        "allowed_maximum": maximum,
+        "normal": normal,
+        "below": below,
+        "above": above,
+        "compliance": compliance,
+        "delta": delta,
+        "change_percent": change_percent,
+        "direction": direction,
+        "direction_label": direction_label,
+        "period_start": first["medido_en"],
+        "period_end": latest["medido_en"],
+        "decision": decision,
+    }
 
 
 def _positive_id(raw_value):
@@ -145,7 +248,18 @@ def list_measurements():
         equipment_id, variable_id, start_date, exclusive_end, batch_id
     )
     chart_data = []
+    measurement_analysis = None
+    chart_summary = None
     if equipment_id and variable_id:
+        measurement_analysis = _build_measurement_analysis(items)
+        if measurement_analysis:
+            chart_summary = {
+                "average": float(measurement_analysis["average"]),
+                "unit": measurement_analysis["unit"],
+                "normal": measurement_analysis["normal"],
+                "below": measurement_analysis["below"],
+                "above": measurement_analysis["above"],
+            }
         chart_data = [
             {
                 "value": float(item["valor"]),
@@ -163,6 +277,8 @@ def list_measurements():
         equipment_items=measurements.list_equipment_options(),
         variable_items=measurements.list_variable_options(),
         chart_data=chart_data,
+        chart_summary=chart_summary,
+        measurement_analysis=measurement_analysis,
         filters={
             "equipo": str(equipment_id or ""),
             "variable": str(variable_id or ""),

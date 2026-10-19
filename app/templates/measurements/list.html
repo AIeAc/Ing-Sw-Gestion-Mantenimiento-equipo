@@ -13,12 +13,55 @@
   <div class="filter-actions"><button class="button" type="submit"><i class="ph ph-funnel-simple" aria-hidden="true"></i><span>Aplicar</span></button>{% if filters.equipo or filters.variable or filters.desde or filters.hasta or filters.lote %}<a class="button button-secondary" href="{{ url_for('measurements.list_measurements') }}">Limpiar</a>{% endif %}</div>
 </form></section>
 
+{% if not filters.equipo or not filters.variable %}
 <section class="chart-panel" aria-labelledby="trend-title">
-  <div class="section-heading"><div><h2 id="trend-title">Tendencia de mediciones</h2><p>Valores, mínimo y máximo configurados</p></div>{% if chart_data %}<span class="chart-count">{{ chart_data|length }} puntos</span>{% endif %}</div>
-  {% if not filters.equipo or not filters.variable %}<div class="chart-placeholder" role="status"><i class="ph ph-chart-line-up" aria-hidden="true"></i><div><h3>Selecciona un equipo y una variable</h3><p>La gráfica compara mediciones de la misma magnitud y unidad.</p></div></div>
-  {% elif chart_data %}<div class="chart-wrap" data-line-chart aria-label="Gráfica de tendencia de las mediciones seleccionadas"><svg role="img" aria-labelledby="trend-title"></svg><div class="chart-legend"><span><i class="legend-value" aria-hidden="true"></i>Medición</span><span><i class="legend-range" aria-hidden="true"></i>Rango permitido</span><span><i class="legend-alert" aria-hidden="true"></i>Fuera de rango</span></div></div><script type="application/json" data-line-chart-data>{{ chart_data|tojson }}</script>
-  {% else %}<div class="chart-placeholder" role="status"><i class="ph ph-chart-line" aria-hidden="true"></i><div><h3>No hay datos para graficar</h3><p>Importa mediciones o ajusta el periodo seleccionado.</p></div></div>{% endif %}
+  <div class="section-heading"><div><h2 id="trend-title">Análisis de mediciones</h2><p>Compara una sola variable para obtener indicadores consistentes.</p></div></div>
+  <div class="chart-placeholder" role="status"><i class="ph ph-chart-line-up" aria-hidden="true"></i><div><h3>Selecciona un equipo y una variable</h3><p>Verás tendencia, cumplimiento del rango y señales que requieren atención.</p></div></div>
 </section>
+{% elif measurement_analysis %}
+<section class="measurement-analysis" aria-labelledby="analysis-title">
+  <div class="analysis-heading">
+    <div><p class="eyebrow">Lectura descriptiva del periodo</p><h2 id="analysis-title">{{ measurement_analysis.variable }} · {{ measurement_analysis.equipment }}</h2><p>{{ measurement_analysis.period_start.strftime('%d/%m/%Y · %H:%M') }} — {{ measurement_analysis.period_end.strftime('%d/%m/%Y · %H:%M') }} · {{ measurement_analysis.count }} {{ 'lectura' if measurement_analysis.count == 1 else 'lecturas' }}</p></div>
+    <span class="analysis-scope"><i class="ph ph-info" aria-hidden="true"></i>No es una predicción</span>
+  </div>
+
+  <div class="measurement-kpis" aria-label="Indicadores del periodo">
+    <article class="measurement-kpi"><span>Última lectura</span><strong>{{ measurement_analysis.latest|number }} <small>{{ measurement_analysis.unit }}</small></strong><p>{{ measurement_analysis.latest_at.strftime('%d/%m/%Y · %H:%M') }}</p></article>
+    <article class="measurement-kpi"><span>Cumplimiento</span><strong>{{ measurement_analysis.compliance|number }}<small>%</small></strong><p>{{ measurement_analysis.normal }} de {{ measurement_analysis.count }} dentro de rango</p></article>
+    <article class="measurement-kpi"><span>Promedio</span><strong>{{ measurement_analysis.average|number }} <small>{{ measurement_analysis.unit }}</small></strong><p>Rango permitido: {{ measurement_analysis.allowed_minimum|number }}–{{ measurement_analysis.allowed_maximum|number }}</p></article>
+    <article class="measurement-kpi"><span>Cambio observado</span><strong class="trend-value trend-{{ measurement_analysis.direction }}"><i class="ph {{ 'ph-arrow-up-right' if measurement_analysis.direction == 'up' else 'ph-arrow-down-right' if measurement_analysis.direction == 'down' else 'ph-minus' }}" aria-hidden="true"></i>{{ measurement_analysis.direction_label }}</strong><p>{% if measurement_analysis.change_percent is not none %}{{ '%+.1f'|format(measurement_analysis.change_percent) }}% entre primera y última{% else %}{{ '%+.2f'|format(measurement_analysis.delta) }} {{ measurement_analysis.unit }} en el periodo{% endif %}</p></article>
+  </div>
+
+  <div class="decision-callout decision-{{ measurement_analysis.decision.level }}" role="status">
+    <i class="ph {{ 'ph-warning-octagon' if measurement_analysis.decision.level == 'alert' else 'ph-warning' if measurement_analysis.decision.level == 'warning' else 'ph-check-circle' }}" aria-hidden="true"></i>
+    <div><strong>{{ measurement_analysis.decision.title }}</strong><p>{{ measurement_analysis.decision.message }}</p></div>
+  </div>
+
+  <div class="analysis-grid">
+    <article class="chart-panel analysis-chart-panel" aria-labelledby="trend-title">
+      <div class="section-heading"><div><h3 id="trend-title">Comportamiento en el tiempo</h3><p>Lecturas frente al rango permitido y al promedio del periodo.</p></div><span class="chart-count">{{ chart_data|length }} puntos</span></div>
+      <div class="chart-wrap" data-line-chart aria-label="Gráfica temporal de las mediciones seleccionadas"><svg role="img" aria-labelledby="trend-title"></svg><div class="chart-legend"><span><i class="legend-value" aria-hidden="true"></i>Medición</span><span><i class="legend-average" aria-hidden="true"></i>Promedio</span><span><i class="legend-range" aria-hidden="true"></i>Rango permitido</span><span><i class="legend-alert" aria-hidden="true"></i>Fuera de rango</span></div></div>
+    </article>
+    <article class="chart-panel compliance-panel" aria-labelledby="compliance-title">
+      <div class="section-heading"><div><h3 id="compliance-title">Cumplimiento del rango</h3><p>Distribución de lecturas del periodo.</p></div></div>
+      <div class="compliance-chart" data-compliance-chart><svg role="img" aria-labelledby="compliance-title"></svg><strong>{{ measurement_analysis.compliance|number }}<small>%</small></strong><span>dentro de rango</span></div>
+      <dl class="compliance-breakdown">
+        <div><dt><i class="compliance-normal" aria-hidden="true"></i>Normal</dt><dd>{{ measurement_analysis.normal }}</dd></div>
+        <div><dt><i class="compliance-below" aria-hidden="true"></i>Debajo del mínimo</dt><dd>{{ measurement_analysis.below }}</dd></div>
+        <div><dt><i class="compliance-above" aria-hidden="true"></i>Sobre el máximo</dt><dd>{{ measurement_analysis.above }}</dd></div>
+      </dl>
+      <div class="observed-range"><span>Valores observados</span><strong>{{ measurement_analysis.observed_minimum|number }}–{{ measurement_analysis.observed_maximum|number }} {{ measurement_analysis.unit }}</strong></div>
+    </article>
+  </div>
+  <script type="application/json" data-line-chart-data>{{ chart_data|tojson }}</script>
+  <script type="application/json" data-chart-summary>{{ chart_summary|tojson }}</script>
+</section>
+{% else %}
+<section class="chart-panel" aria-labelledby="trend-title">
+  <div class="section-heading"><div><h2 id="trend-title">Análisis de mediciones</h2><p>Valores y cumplimiento del rango configurado.</p></div></div>
+  <div class="chart-placeholder" role="status"><i class="ph ph-chart-line" aria-hidden="true"></i><div><h3>No hay datos para analizar</h3><p>Importa mediciones o ajusta el periodo seleccionado.</p></div></div>
+</section>
+{% endif %}
 
 <section class="content-section" aria-labelledby="measurements-title"><div class="section-heading"><h2 id="measurements-title">Registros</h2><p>{{ measurement_items|length }} {{ 'medición' if measurement_items|length == 1 else 'mediciones' }}{% if measurement_items|length == 300 %} · límite mostrado{% endif %}</p></div>
 {% if measurement_items %}<div class="table-scroll" tabindex="0" aria-label="Tabla de mediciones operativas"><table class="measurements-table"><thead><tr><th scope="col">Fecha</th><th scope="col">Equipo</th><th scope="col">Variable</th><th scope="col">Valor</th><th scope="col">Resultado</th><th scope="col">Origen</th></tr></thead><tbody>{% for item in measurement_items %}<tr><td>{{ item.medido_en.strftime('%d/%m/%Y · %H:%M') }}</td><td><strong class="table-primary">{{ item.equipo }}</strong><span class="table-secondary">{{ item.codigo_interno }}</span></td><td>{{ item.variable }}<span class="table-secondary">{{ item.codigo_variable }}</span></td><td><strong>{{ item.valor|number }} {{ item.unidad }}</strong><span class="table-secondary">Rango {{ item.valor_minimo|number }}–{{ item.valor_maximo|number }}</span></td><td><span class="status {{ 'status-alert' if item.fuera_de_rango else 'status-active' }}">{{ 'Fuera de rango' if item.fuera_de_rango else 'Normal' }}</span></td><td>{{ 'Importación' if item.tipo_origen == 'IMPORTACION' else 'Simulador' }}<span class="table-secondary">Lote #{{ item.id_lote }}</span></td></tr>{% endfor %}</tbody></table></div>

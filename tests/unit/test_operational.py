@@ -5,6 +5,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from app import create_app
+from app.blueprints.measurements import _build_measurement_analysis
 
 
 class OperationalModuleTests(unittest.TestCase):
@@ -147,10 +148,36 @@ class OperationalModuleTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'data-line-chart', response.data)
+        self.assertIn(b'data-compliance-chart', response.data)
+        self.assertIn(b'Revisi\xc3\xb3n inmediata', response.data)
         self.assertIn(b'"outOfRange": true', response.data)
         list_measurements.assert_called_once_with(
             4, 2, date(2026, 10, 1), None, None
         )
+
+    def test_measurement_analysis_calculates_compliance_and_direction(self):
+        base = {
+            "valor_minimo": Decimal("10"),
+            "valor_maximo": Decimal("20"),
+            "equipo": "Bomba",
+            "codigo_interno": "EQ-001",
+            "variable": "Temperatura",
+            "unidad": "°C",
+        }
+        items = [
+            {**base, "valor": Decimal("22"), "medido_en": datetime(2026, 10, 4, 12)},
+            {**base, "valor": Decimal("16"), "medido_en": datetime(2026, 10, 4, 11)},
+            {**base, "valor": Decimal("12"), "medido_en": datetime(2026, 10, 4, 10)},
+        ]
+
+        analysis = _build_measurement_analysis(items)
+
+        self.assertEqual(analysis["normal"], 2)
+        self.assertEqual(analysis["above"], 1)
+        self.assertEqual(analysis["below"], 0)
+        self.assertEqual(analysis["compliance"], Decimal("66.7"))
+        self.assertEqual(analysis["direction"], "up")
+        self.assertEqual(analysis["decision"]["level"], "alert")
 
     @patch("app.blueprints.auth.users.find_active_user_by_id")
     @patch("app.blueprints.alerts.alerts.resolve_alert", return_value=True)

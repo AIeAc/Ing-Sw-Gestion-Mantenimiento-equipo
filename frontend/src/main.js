@@ -103,6 +103,7 @@ function renderLineChart() {
   const container = document.querySelector("[data-line-chart]");
   const svg = container?.querySelector("svg");
   const points = chartData("[data-line-chart-data]");
+  const summary = chartData("[data-chart-summary]");
   if (!container || !svg || !points.length) return;
 
   const width = 820;
@@ -132,24 +133,81 @@ function renderLineChart() {
   const upper = points.map((point, index) => `${x(index)},${y(point.maximum)}`);
   const lower = points.map((point, index) => `${x(index)},${y(point.minimum)}`).reverse();
   svg.append(svgElement("polygon", { points: [...upper, ...lower].join(" "), class: "chart-range-area" }));
+  if (Number.isFinite(summary.average)) {
+    const averageY = y(summary.average);
+    svg.append(svgElement("line", { x1: padding.left, y1: averageY, x2: width - padding.right, y2: averageY, class: "chart-average-line" }));
+    svg.append(svgElement("text", { x: width - padding.right, y: averageY - 7, class: "chart-average-label", "text-anchor": "end" }, `Prom. ${summary.average.toLocaleString("es-MX", { maximumFractionDigits: 2 })} ${summary.unit}`));
+  }
   const linePath = points.map((point, index) => `${index ? "L" : "M"} ${x(index)} ${y(point.value)}`).join(" ");
   svg.append(svgElement("path", { d: linePath, class: "chart-value-line" }));
 
   points.forEach((point, index) => {
+    const measuredAt = new Date(point.measuredAt).toLocaleString("es-MX");
+    const result = point.outOfRange ? "fuera de rango" : "dentro de rango";
     const circle = svgElement("circle", {
       cx: x(index),
       cy: y(point.value),
       r: point.outOfRange ? 5 : 3.5,
       class: point.outOfRange ? "chart-point chart-point-alert" : "chart-point",
+      tabindex: "0",
+      role: "img",
+      "aria-label": `${point.value} ${summary.unit || ""}, ${measuredAt}, ${result}`,
     });
-    circle.append(svgElement("title", {}, `${point.value} · ${new Date(point.measuredAt).toLocaleString("es-MX")}`));
+    circle.append(svgElement("title", {}, `${point.value} ${summary.unit || ""} · ${measuredAt} · ${result}`));
     svg.append(circle);
   });
+
+  const latest = points.at(-1);
+  const latestIndex = points.length - 1;
+  svg.append(svgElement("text", {
+    x: x(latestIndex) - 7,
+    y: Math.max(y(latest.value) - 12, padding.top + 10),
+    class: "chart-latest-label",
+    "text-anchor": "end",
+  }, `Última: ${latest.value.toLocaleString("es-MX")} ${summary.unit || ""}`));
 
   const labelIndexes = [...new Set([0, Math.floor((points.length - 1) / 2), points.length - 1])];
   labelIndexes.forEach((index) => {
     const date = new Date(points[index].measuredAt);
     svg.append(svgElement("text", { x: x(index), y: height - 16, class: "chart-axis-label", "text-anchor": "middle" }, date.toLocaleDateString("es-MX", { day: "2-digit", month: "short" })));
+  });
+}
+
+function renderComplianceChart() {
+  const container = document.querySelector("[data-compliance-chart]");
+  const svg = container?.querySelector("svg");
+  const summary = chartData("[data-chart-summary]");
+  if (!container || !svg || !summary || Array.isArray(summary)) return;
+
+  const segments = [
+    { label: "Dentro de rango", value: summary.normal, className: "compliance-segment-normal" },
+    { label: "Debajo del mínimo", value: summary.below, className: "compliance-segment-below" },
+    { label: "Sobre el máximo", value: summary.above, className: "compliance-segment-above" },
+  ];
+  const total = segments.reduce((sum, segment) => sum + segment.value, 0);
+  if (!total) return;
+
+  const radius = 62;
+  const circumference = 2 * Math.PI * radius;
+  let offset = 0;
+  svg.setAttribute("viewBox", "0 0 180 180");
+  svg.replaceChildren();
+  svg.append(svgElement("circle", { cx: 90, cy: 90, r: radius, class: "compliance-track" }));
+
+  segments.forEach((segment) => {
+    if (!segment.value) return;
+    const length = (segment.value / total) * circumference;
+    const circle = svgElement("circle", {
+      cx: 90,
+      cy: 90,
+      r: radius,
+      class: `compliance-segment ${segment.className}`,
+      "stroke-dasharray": `${length} ${circumference - length}`,
+      "stroke-dashoffset": -offset,
+    });
+    circle.append(svgElement("title", {}, `${segment.label}: ${segment.value}`));
+    svg.append(circle);
+    offset += length;
   });
 }
 
@@ -222,4 +280,5 @@ function renderBarChart() {
 }
 
 renderLineChart();
+renderComplianceChart();
 renderBarChart();
