@@ -218,8 +218,8 @@ function renderBarChart() {
   if (!container || !svg || !items.length) return;
 
   const width = 720;
-  const height = 290;
-  const padding = { top: 28, right: 20, bottom: 44, left: 58 };
+  const height = 310;
+  const padding = { top: 34, right: 20, bottom: 62, left: 58 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   const maximumCost = Math.max(...items.map((item) => item.cost));
@@ -274,11 +274,44 @@ function renderBarChart() {
     });
     bar.append(svgElement("title", {}, `${item.label}: $${item.cost.toLocaleString("es-MX")} · ${item.correctives} correctivos`));
     svg.append(bar);
-    svg.append(svgElement("text", { x: center, y: height - 16, class: "chart-axis-label", "text-anchor": "middle" }, item.label));
-    svg.append(svgElement("text", { x: center, y: Math.max(barY - 8, 16), class: "chart-bar-label", "text-anchor": "middle" }, `${item.correctives} corr.`));
+    svg.append(svgElement("text", { x: center, y: height - 29, class: "chart-axis-label", "text-anchor": "middle" }, item.label));
+    svg.append(svgElement("text", { x: center, y: height - 11, class: "chart-secondary-label", "text-anchor": "middle" }, `${item.correctives} corr. · ${item.preventives} prev.`));
+    svg.append(svgElement("text", { x: center, y: Math.max(barY - 8, 18), class: "chart-bar-label", "text-anchor": "middle" }, `$${Math.round(item.cost).toLocaleString("es-MX")}`));
+  });
+}
+
+function renderImpactChart() {
+  const container = document.querySelector("[data-impact-chart]");
+  const svg = container?.querySelector("svg");
+  const items = chartData("[data-impact-chart-data]");
+  if (!container || !svg || !items.length) return;
+
+  const width = 980;
+  const rowHeight = 68;
+  const height = items.length * rowHeight + 24;
+  const labelWidth = 215;
+  const rightWidth = 205;
+  const chartWidth = width - labelWidth - rightWidth;
+  const maximum = Math.max(...items.map((item) => item.cost), 1);
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.replaceChildren();
+
+  items.forEach((item, index) => {
+    const rowY = 12 + index * rowHeight;
+    const centerY = rowY + 27;
+    const barWidth = (item.cost / maximum) * chartWidth;
+    svg.append(svgElement("text", { x: 0, y: rowY + 18, class: "impact-name" }, item.label));
+    svg.append(svgElement("text", { x: 0, y: rowY + 38, class: "impact-code" }, item.code));
+    svg.append(svgElement("rect", { x: labelWidth, y: centerY - 8, width: chartWidth, height: 16, rx: 8, class: "impact-track" }));
+    const bar = svgElement("rect", { x: labelWidth, y: centerY - 8, width: Math.max(barWidth, item.cost ? 3 : 0), height: 16, rx: 8, class: "impact-bar" });
+    bar.append(svgElement("title", {}, `${item.label}: $${item.cost.toLocaleString("es-MX")} · ${item.correctives} correctivos · ${item.alerts} alertas pendientes`));
+    svg.append(bar);
+    svg.append(svgElement("text", { x: labelWidth + chartWidth + 14, y: rowY + 20, class: "impact-cost" }, `$${Math.round(item.cost).toLocaleString("es-MX")}`));
+    svg.append(svgElement("text", { x: labelWidth + chartWidth + 14, y: rowY + 40, class: "impact-meta" }, `${item.correctives} corr. · ${item.alerts} alertas`));
   });
 }
 
 renderLineChart();
 renderComplianceChart();
 renderBarChart();
+renderImpactChart();

@@ -50,6 +50,10 @@ def maintenance_totals_by_month(months=6):
                 COUNT(m.id_mantenimiento) FILTER (
                     WHERE m.tipo = 'CORRECTIVO'
                 ) AS correctives,
+                COUNT(m.id_mantenimiento) FILTER (
+                    WHERE m.tipo = 'PREVENTIVO'
+                ) AS preventives,
+                COUNT(m.id_mantenimiento) AS maintenances,
                 COALESCE(SUM(m.costo) FILTER (
                     WHERE m.estado = 'COMPLETADO'
                 ), 0) AS cost
@@ -63,5 +67,58 @@ def maintenance_totals_by_month(months=6):
             ORDER BY months.month
             """,
             (months,),
+        )
+        return cursor.fetchall()
+
+
+def equipment_impact(months=6, limit=5):
+    with get_db().cursor() as cursor:
+        cursor.execute(
+            """
+            WITH maintenance_impact AS (
+                SELECT
+                    e.id_equipo,
+                    e.nombre,
+                    e.codigo_interno,
+                    COALESCE(SUM(m.costo) FILTER (
+                        WHERE m.estado = 'COMPLETADO'
+                    ), 0) AS cost,
+                    COUNT(m.id_mantenimiento) FILTER (
+                        WHERE m.tipo = 'CORRECTIVO'
+                    ) AS correctives
+                FROM equipos AS e
+                LEFT JOIN mantenimientos AS m
+                    ON m.id_equipo = e.id_equipo
+                   AND COALESCE(m.fecha_fin, m.fecha_inicio, m.fecha_programada)::DATE
+                       >= DATE_TRUNC('month', CURRENT_DATE) - (%s - 1) * INTERVAL '1 month'
+                   AND COALESCE(m.fecha_fin, m.fecha_inicio, m.fecha_programada)::DATE
+                       < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+                WHERE e.estado <> 'DADO_DE_BAJA'
+                GROUP BY e.id_equipo, e.nombre, e.codigo_interno
+            ), pending_alerts AS (
+                SELECT m.id_equipo, COUNT(*) AS alerts
+                FROM alertas_rango AS a
+                INNER JOIN mediciones_operativas AS m
+                    ON m.id_medicion = a.id_medicion
+                WHERE a.estado = 'PENDIENTE'
+                GROUP BY m.id_equipo
+            )
+            SELECT
+                impact.*,
+                COALESCE(alerts.alerts, 0) AS alerts
+            FROM maintenance_impact AS impact
+            LEFT JOIN pending_alerts AS alerts
+                ON alerts.id_equipo = impact.id_equipo
+            WHERE impact.cost > 0
+               OR impact.correctives > 0
+               OR COALESCE(alerts.alerts, 0) > 0
+            ORDER BY
+                impact.cost DESC,
+                impact.correctives DESC,
+                COALESCE(alerts.alerts, 0) DESC,
+                impact.nombre
+            LIMIT %s
+            """,
+            (months, limit),
         )
         return cursor.fetchall()

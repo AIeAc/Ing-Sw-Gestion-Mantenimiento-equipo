@@ -4,8 +4,9 @@
 {% block content %}
 <header class="page-header dashboard-header">
   <div>
+    <p class="eyebrow">Control de operación</p>
     <h1>Visión general</h1>
-    <p>Estado operativo de los equipos, mantenimientos y mediciones recientes.</p>
+    <p>Continuidad, gasto, carga correctiva y riesgos que requieren atención.</p>
   </div>
   <div class="dashboard-period" aria-label="Periodo de la gráfica">
     <i class="ph ph-calendar-blank" aria-hidden="true"></i><span>Últimos 6 meses</span>
@@ -25,22 +26,36 @@
     <div class="kpi-main"><div><strong>{{ summary.equipos_fuera_de_servicio }}</strong><small>Equipos activos no disponibles</small></div><span class="kpi-status kpi-status-alert">Requieren atención</span></div>
   </article>
   <article class="kpi kpi-correctives">
-    <div class="kpi-heading"><span>Eventos correctivos</span><i class="ph ph-wrench" aria-hidden="true"></i></div>
-    <div class="kpi-main"><div><strong>{{ summary.mantenimientos_correctivos }}</strong><small>Mantenimientos registrados</small></div><span class="kpi-status">Histórico actual</span></div>
+    <div class="kpi-heading"><span>Correctivos del periodo</span><i class="ph ph-wrench" aria-hidden="true"></i></div>
+    <div class="kpi-main"><div><strong>{{ period_analysis.total_correctives }}</strong><small>En los últimos 6 meses</small></div><span class="kpi-status">{{ period_analysis.corrective_share|number }}% del total</span></div>
   </article>
   <article class="kpi kpi-cost">
-    <div class="kpi-heading"><span>Costo de mantenimiento</span><i class="ph ph-currency-dollar" aria-hidden="true"></i></div>
-    <div class="kpi-main"><div><strong>${{ '{:,.0f}'.format(summary.costo_mantenimiento_total) }}</strong><small>Servicios completados</small></div><span class="kpi-status">Costo acumulado</span></div>
+    <div class="kpi-heading"><span>Costo del periodo</span><i class="ph ph-currency-dollar" aria-hidden="true"></i></div>
+    <div class="kpi-main"><div><strong>${{ '{:,.0f}'.format(period_analysis.total_cost) }}</strong><small>Servicios completados · 6 meses</small></div><span class="kpi-status">{% if period_analysis.cost_change is not none %}{{ '%+.1f'|format(period_analysis.cost_change) }}% trimestral{% else %}Sin comparación{% endif %}</span></div>
   </article>
+</section>
+
+<section class="decision-summary" aria-labelledby="decision-summary-title">
+  <div class="decision-summary-heading"><div><p class="eyebrow">Lectura descriptiva</p><h2 id="decision-summary-title">Prioridades actuales</h2></div><span><i class="ph ph-info" aria-hidden="true"></i>No incluye predicciones</span></div>
+  <div class="decision-summary-grid">
+    {% for decision in period_analysis.decisions %}
+      <article class="executive-decision executive-decision-{{ decision.level }}"><i class="ph {{ decision.icon }}" aria-hidden="true"></i><div><strong>{{ decision.title }}</strong><p>{{ decision.message }}</p></div></article>
+    {% endfor %}
+  </div>
 </section>
 
 <div class="dashboard-bento">
   <section class="chart-panel dashboard-chart" aria-labelledby="cost-trend-title">
     <div class="dashboard-panel-heading">
-      <div><h2 id="cost-trend-title">Costos y correctivos</h2><p>Comportamiento mensual del mantenimiento</p></div>
-      <span class="chart-total-small">${{ '{:,.2f}'.format(summary.costo_mantenimiento_total) }}</span>
+      <div><h2 id="cost-trend-title">Evolución mensual del gasto</h2><p>Permite identificar meses de mayor presión presupuestal y su carga correctiva.</p></div>
+      <span class="chart-total-small">${{ '{:,.0f}'.format(period_analysis.total_cost) }} · 6 meses</span>
     </div>
     <div class="bar-chart-wrap" data-bar-chart aria-label="Gráfica mensual de costos y mantenimientos correctivos"><svg role="img" aria-labelledby="cost-trend-title"></svg></div>
+    <dl class="chart-decision-notes">
+      <div><dt>Mayor gasto</dt><dd>{{ period_analysis.peak_label }} · ${{ '{:,.0f}'.format(period_analysis.peak.cost) if period_analysis.peak else '0' }}</dd></div>
+      <div><dt>Últimos 3 meses</dt><dd>${{ '{:,.0f}'.format(period_analysis.recent_cost) }}</dd></div>
+      <div><dt>3 meses anteriores</dt><dd>${{ '{:,.0f}'.format(period_analysis.previous_cost) }}</dd></div>
+    </dl>
     <script type="application/json" data-bar-chart-data>{{ monthly_data|tojson }}</script>
   </section>
 
@@ -57,6 +72,20 @@
       </ul>
     {% else %}
       <div class="empty-state compact-empty"><i class="ph ph-shield-check empty-state-icon" aria-hidden="true"></i><h3>Sin alertas pendientes</h3><p>No hay mediciones fuera de rango por revisar.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="chart-panel equipment-impact-panel" aria-labelledby="equipment-impact-title">
+    <div class="dashboard-panel-heading">
+      <div><h2 id="equipment-impact-title">Equipos con mayor impacto</h2><p>Ranking de costo, eventos correctivos y alertas pendientes durante el periodo.</p></div>
+      {% if period_analysis.top_equipment %}<span class="chart-total-small">Líder: {{ period_analysis.top_equipment.nombre }}</span>{% endif %}
+    </div>
+    {% if equipment_data %}
+      <div class="impact-chart-wrap" data-impact-chart aria-label="Ranking de equipos por costo de mantenimiento"><svg role="img" aria-labelledby="equipment-impact-title"></svg></div>
+      <div class="impact-legend"><span><i class="impact-cost-key" aria-hidden="true"></i>Costo completado</span><span><i class="ph ph-wrench" aria-hidden="true"></i>Correctivos</span><span><i class="ph ph-warning" aria-hidden="true"></i>Alertas pendientes</span></div>
+      <script type="application/json" data-impact-chart-data>{{ equipment_data|tojson }}</script>
+    {% else %}
+      <div class="empty-state compact-empty"><i class="ph ph-chart-bar empty-state-icon" aria-hidden="true"></i><h3>Sin impacto registrado</h3><p>No hay costos, correctivos ni alertas en el periodo.</p></div>
     {% endif %}
   </section>
 </div>

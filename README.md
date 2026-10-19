@@ -156,9 +156,10 @@ con el rol Técnico:
 psql -d mantenimiento_predictivo -f database/demo_seed.sql
 ```
 
-El conjunto incluye equipos, variables operativas, mantenimientos, mediciones
-recientes y alertas de rango en distintos estados. Puede volver a ejecutarse
-sin duplicar los registros de demostración.
+El conjunto incluye 25 equipos, variables operativas, historial y calendario
+de mantenimientos, más de 2,000 mediciones, importaciones exitosas y fallidas,
+y alertas de rango en distintos estados. Puede volver a ejecutarse sin
+duplicar los registros de demostración.
 
 ### 8. Ejecutar
 

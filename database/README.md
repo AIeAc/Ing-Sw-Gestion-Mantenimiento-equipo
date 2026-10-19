@@ -93,7 +93,7 @@ psql -d mantenimiento_predictivo -f database/demo_seed.sql
 ```
 
 Los equipos de demostración usan códigos entre `DEMO-EQ-001` y
-`DEMO-EQ-010`, y los demás registros incluyen referencias `DEMO`, para que
+`DEMO-EQ-025`, y los demás registros incluyen referencias `DEMO`, para que
 sea fácil distinguirlos de los datos reales. El archivo se puede ejecutar más
 de una vez sin duplicar sus registros.
 
