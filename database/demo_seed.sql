@@ -855,4 +855,266 @@ BEGIN
 END;
 $$;
 
+-- Cobertura adicional para Sprint 4. Completa equipos sin historial suficiente
+-- con 60 días de lecturas diarias. Las señales son deterministas: los equipos
+-- de oficina permanecen estables y la bomba de respaldo muestra deterioro
+-- gradual durante los últimos días, como ocurriría antes de una inspección.
+DO $$
+DECLARE
+    v_usuario BIGINT;
+    v_atendedor BIGINT;
+    v_lote BIGINT;
+    v_registros INTEGER;
+BEGIN
+    SELECT id_usuario INTO v_usuario
+    FROM usuarios
+    WHERE activo = TRUE
+    ORDER BY id_usuario
+    LIMIT 1;
+
+    SELECT u.id_usuario INTO v_atendedor
+    FROM usuarios AS u
+    JOIN roles AS r ON r.id_rol = u.id_rol
+    WHERE u.activo = TRUE
+      AND r.activo = TRUE
+      AND LOWER(r.nombre) = LOWER('Técnico')
+    ORDER BY u.id_usuario
+    LIMIT 1;
+
+    IF v_usuario IS NULL OR EXISTS (
+        SELECT 1 FROM lotes_mediciones
+        WHERE nombre_archivo = 'simulacion-cobertura-sprint4-60d'
+    ) THEN
+        RETURN;
+    END IF;
+
+    INSERT INTO lotes_mediciones (
+        registrado_por,
+        tipo_origen,
+        estado,
+        nombre_archivo,
+        registros_totales
+    ) VALUES (
+        v_usuario,
+        'SIMULADOR',
+        'PROCESANDO',
+        'simulacion-cobertura-sprint4-60d',
+        600
+    ) RETURNING id_lote INTO v_lote;
+
+    WITH series_config (
+        numero,
+        codigo_equipo,
+        codigo_variable,
+        valor_base,
+        amplitud,
+        cambio_diario_final
+    ) AS (
+        VALUES
+            (1, 'DEMO-EQ-007', 'VOLTAJE-L1', 225.0, 3.2, 0.00),
+            (2, 'DEMO-EQ-007', 'POTENCIA', 18.0, 2.8, 0.00),
+            (3, 'DEMO-EQ-008', 'TEMP-ROD', 52.0, 3.5, 0.00),
+            (4, 'DEMO-EQ-008', 'HUMEDAD', 44.0, 4.0, 0.00),
+            (5, 'DEMO-EQ-008', 'POTENCIA', 38.0, 5.0, 0.00),
+            (6, 'DEMO-EQ-009', 'TEMP-ACEITE', 71.0, 4.5, 0.00),
+            (7, 'DEMO-EQ-009', 'POTENCIA', 47.0, 6.0, 0.00),
+            (8, 'DEMO-EQ-010', 'VIB-RMS', 3.2, 0.5, 0.55),
+            (9, 'DEMO-EQ-010', 'TEMP-ROD', 60.0, 3.0, 3.60),
+            (10, 'DEMO-EQ-010', 'PRES-DESC', 6.4, 0.3, -0.32)
+    ), puntos AS (
+        SELECT
+            configuracion.*,
+            paso,
+            configuracion.valor_base
+                + SIN((paso + configuracion.numero) / 4.6)
+                    * configuracion.amplitud
+                + GREATEST(paso - 51, 0)
+                    * configuracion.cambio_diario_final AS valor
+        FROM series_config AS configuracion
+        CROSS JOIN GENERATE_SERIES(0, 59) AS paso
+    )
+    INSERT INTO mediciones_operativas (
+        id_equipo,
+        id_variable,
+        id_lote,
+        valor,
+        medido_en
+    )
+    SELECT
+        e.id_equipo,
+        v.id_variable,
+        v_lote,
+        ROUND(p.valor::NUMERIC, 3),
+        CURRENT_DATE - (59 - p.paso) + TIME '08:00'
+    FROM puntos AS p
+    JOIN equipos AS e ON e.codigo_interno = p.codigo_equipo
+    JOIN variables_operativas AS v ON v.codigo = p.codigo_variable
+    ORDER BY p.numero, p.paso;
+
+    GET DIAGNOSTICS v_registros = ROW_COUNT;
+
+    UPDATE alertas_rango AS a
+    SET generada_en = m.medido_en
+    FROM mediciones_operativas AS m
+    WHERE a.id_medicion = m.id_medicion
+      AND m.id_lote = v_lote;
+
+    IF v_atendedor IS NOT NULL THEN
+        UPDATE alertas_rango AS a
+        SET estado = 'ATENDIDA',
+            atendida_por = v_atendedor,
+            atendida_en = m.medido_en + INTERVAL '2 hours',
+            observaciones = 'Lectura histórica revisada durante el turno siguiente.'
+        FROM mediciones_operativas AS m
+        WHERE a.id_medicion = m.id_medicion
+          AND m.id_lote = v_lote
+          AND m.medido_en < CURRENT_TIMESTAMP - INTERVAL '4 days';
+    END IF;
+
+    UPDATE lotes_mediciones
+    SET estado = 'COMPLETADO',
+        registros_totales = v_registros,
+        registros_validos = v_registros,
+        finalizado_en = CURRENT_TIMESTAMP
+    WHERE id_lote = v_lote;
+END;
+$$;
+
+-- Patrones previos a correctivos reales del conjunto demo. Cada serie termina
+-- justo antes del servicio y aumenta gradualmente, evitando que la etiqueta de
+-- falla dependa de una anomalía aislada elegida al azar.
+DO $$
+DECLARE
+    v_usuario BIGINT;
+    v_atendedor BIGINT;
+    v_lote BIGINT;
+    v_registros INTEGER;
+BEGIN
+    SELECT id_usuario INTO v_usuario
+    FROM usuarios
+    WHERE activo = TRUE
+    ORDER BY id_usuario
+    LIMIT 1;
+
+    SELECT u.id_usuario INTO v_atendedor
+    FROM usuarios AS u
+    JOIN roles AS r ON r.id_rol = u.id_rol
+    WHERE u.activo = TRUE
+      AND r.activo = TRUE
+      AND LOWER(r.nombre) = LOWER('Técnico')
+    ORDER BY u.id_usuario
+    LIMIT 1;
+
+    IF v_usuario IS NULL OR EXISTS (
+        SELECT 1 FROM lotes_mediciones
+        WHERE nombre_archivo = 'simulacion-patrones-precorrectivo-sprint4'
+    ) THEN
+        RETURN;
+    END IF;
+
+    INSERT INTO lotes_mediciones (
+        registrado_por,
+        tipo_origen,
+        estado,
+        nombre_archivo,
+        registros_totales
+    ) VALUES (
+        v_usuario,
+        'SIMULADOR',
+        'PROCESANDO',
+        'simulacion-patrones-precorrectivo-sprint4',
+        168
+    ) RETURNING id_lote INTO v_lote;
+
+    WITH series_config (
+        numero,
+        codigo_equipo,
+        codigo_variable,
+        valor_base,
+        amplitud,
+        cambio_diario
+    ) AS (
+        VALUES
+            (1, 'DEMO-EQ-011', 'VIB-RMS', 3.0, 0.35, 0.58),
+            (2, 'DEMO-EQ-011', 'CORRIENTE-L1', 18.0, 1.4, 1.80),
+            (3, 'DEMO-EQ-012', 'TEMP-ACEITE', 68.0, 3.5, 3.50),
+            (4, 'DEMO-EQ-012', 'PRES-DESC', 6.8, 0.25, -0.31),
+            (5, 'DEMO-EQ-015', 'VIB-RMS', 4.0, 0.45, 0.42),
+            (6, 'DEMO-EQ-015', 'TEMP-ROD', 62.0, 3.0, 3.00),
+            (7, 'DEMO-EQ-022', 'TEMP-ROD', 70.0, 3.0, 2.00),
+            (8, 'DEMO-EQ-022', 'TEMP-ACEITE', 70.0, 3.5, 3.20)
+    ), corrective_dates AS (
+        SELECT DISTINCT ON (e.codigo_interno)
+            e.codigo_interno,
+            COALESCE(m.fecha_inicio, m.fecha_programada) AS corrective_at
+        FROM mantenimientos AS m
+        JOIN equipos AS e ON e.id_equipo = m.id_equipo
+        WHERE m.tipo = 'CORRECTIVO'
+          AND m.estado <> 'CANCELADO'
+          AND e.codigo_interno IN (
+              'DEMO-EQ-011', 'DEMO-EQ-012', 'DEMO-EQ-015', 'DEMO-EQ-022'
+          )
+        ORDER BY e.codigo_interno,
+            COALESCE(m.fecha_inicio, m.fecha_programada) DESC
+    ), puntos AS (
+        SELECT
+            configuracion.*,
+            fechas.corrective_at,
+            paso,
+            configuracion.valor_base
+                + SIN((paso + configuracion.numero) / 3.1)
+                    * configuracion.amplitud
+                + GREATEST(paso - 12, 0)
+                    * configuracion.cambio_diario AS valor
+        FROM series_config AS configuracion
+        JOIN corrective_dates AS fechas
+            ON fechas.codigo_interno = configuracion.codigo_equipo
+        CROSS JOIN GENERATE_SERIES(0, 20) AS paso
+    )
+    INSERT INTO mediciones_operativas (
+        id_equipo,
+        id_variable,
+        id_lote,
+        valor,
+        medido_en
+    )
+    SELECT
+        e.id_equipo,
+        v.id_variable,
+        v_lote,
+        ROUND(p.valor::NUMERIC, 3),
+        p.corrective_at - (21 - p.paso) * INTERVAL '1 day'
+    FROM puntos AS p
+    JOIN equipos AS e ON e.codigo_interno = p.codigo_equipo
+    JOIN variables_operativas AS v ON v.codigo = p.codigo_variable
+    ORDER BY p.numero, p.paso;
+
+    GET DIAGNOSTICS v_registros = ROW_COUNT;
+
+    UPDATE alertas_rango AS a
+    SET generada_en = m.medido_en
+    FROM mediciones_operativas AS m
+    WHERE a.id_medicion = m.id_medicion
+      AND m.id_lote = v_lote;
+
+    IF v_atendedor IS NOT NULL THEN
+        UPDATE alertas_rango AS a
+        SET estado = 'ATENDIDA',
+            atendida_por = v_atendedor,
+            atendida_en = m.medido_en + INTERVAL '90 minutes',
+            observaciones = 'Anomalía confirmada y vinculada al correctivo posterior.'
+        FROM mediciones_operativas AS m
+        WHERE a.id_medicion = m.id_medicion
+          AND m.id_lote = v_lote;
+    END IF;
+
+    UPDATE lotes_mediciones
+    SET estado = 'COMPLETADO',
+        registros_totales = v_registros,
+        registros_validos = v_registros,
+        finalizado_en = CURRENT_TIMESTAMP
+    WHERE id_lote = v_lote;
+END;
+$$;
+
 COMMIT;

@@ -1,8 +1,8 @@
 # Sistema de mantenimiento predictivo
 
-La aplicación conserva los Sprints 1 y 2 e incorpora el módulo funcional del
-**Sprint 3** para variables operativas, mediciones, alertas por rango e
-indicadores básicos.
+La aplicación conserva los Sprints 1, 2 y 3 e incorpora el módulo funcional del
+**Sprint 4** para entrenar y ejecutar localmente un modelo sencillo de riesgo
+de falla por equipo.
 
 - inicio y cierre de sesión;
 - roles de Administrador y Técnico;
@@ -18,6 +18,10 @@ indicadores básicos.
 - consulta tabular y gráfica de mediciones;
 - generación automática y atención de alertas por rango;
 - dashboard de disponibilidad, fallas correctivas y costos.
+- entrenamiento local reproducible con Regresión Logística y Random Forest;
+- evaluación comparativa con precision, recall, F1 y matriz de confusión;
+- estimación de riesgo bajo, medio o alto por equipo sin servicios de pago;
+- prioridad recomendada, costo correctivo estimado y exposición económica.
 
 ## Estructura del proyecto
 
@@ -31,6 +35,7 @@ mantenimiento-predictivo/
 │   ├── static/dist/      # Recursos frontend compilados
 │   └── templates/        # Vistas Jinja organizadas por módulo
 ├── database/             # Esquema y migraciones de los Sprints 1, 2 y 3
+├── docs/                 # Definición, criterios y límites del Sprint 4
 ├── frontend/src/         # CSS, JavaScript e iconos fuente
 ├── tests/
 │   ├── unit/             # Pruebas rápidas y aisladas
@@ -161,7 +166,21 @@ de mantenimientos, más de 2,000 mediciones, importaciones exitosas y fallidas,
 y alertas de rango en distintos estados. Puede volver a ejecutarse sin
 duplicar los registros de demostración.
 
-### 8. Ejecutar
+### 8. Entrenar el modelo local
+
+El modelo no se descarga desde Internet ni se guarda en Git. Después de
+instalar las dependencias, entrénalo una vez en cada computadora:
+
+```bash
+flask --app app entrenar-modelo-riesgo
+```
+
+El comando combina cortes históricos de PostgreSQL con escenarios académicos
+reproducibles, compara Regresión Logística y Random Forest, selecciona el mejor
+resultado aceptado y guarda el
+archivo local dentro de `instance/`.
+
+### 9. Ejecutar
 
 ```bash
 flask --app app run --debug
@@ -225,6 +244,7 @@ El resultado se genera en `app/static/dist/` y Flask lo sirve directamente.
 | Importar y consultar mediciones | Sí | Sí |
 | Consultar y atender alertas por rango | Sí | Sí |
 | Consultar dashboard operativo | Sí | Sí |
+| Consultar riesgo local por equipo | Sí | Sí |
 | Administrar clasificaciones | Sí | No |
 | Crear usuarios y asignar roles | Sí | No |
 
@@ -240,7 +260,8 @@ python -m unittest discover -v
 Las pruebas cubren el acceso a rutas protegidas, credenciales inválidas,
 protección CSRF, inicio de sesión, permisos por rol, inventario, validación de
 mantenimientos, historial, calendario, catálogo de variables, importación CSV,
-gráficas de mediciones, atención de alertas y cierre de sesión.
+gráficas de mediciones, atención de alertas, entrenamiento local, evaluación
+del modelo, niveles de riesgo y cierre de sesión.
 
 La prueba integral requiere una base PostgreSQL exclusiva para pruebas con el
 esquema y los datos iniciales ya cargados:

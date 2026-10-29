@@ -2,6 +2,7 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, u
 from psycopg.errors import UniqueViolation
 
 from app.core.database import get_db
+from app.core.validation import is_label, is_safe_free_text
 from app.repositories import categories
 
 from .auth import roles_required, validate_csrf
@@ -23,8 +24,12 @@ def _validate(data):
         errors["nombre"] = "Ingresa el nombre de la categoría."
     elif len(data["nombre"]) > 100:
         errors["nombre"] = "Usa 100 caracteres o menos."
+    elif not is_label(data["nombre"]):
+        errors["nombre"] = "Usa letras, números y signos de separación comunes."
     if len(data["descripcion"]) > 255:
         errors["descripcion"] = "Usa 255 caracteres o menos."
+    elif data["descripcion"] and not is_safe_free_text(data["descripcion"]):
+        errors["descripcion"] = "La descripción contiene caracteres no permitidos."
     return errors
 
 

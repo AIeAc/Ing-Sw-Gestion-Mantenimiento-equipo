@@ -30,6 +30,9 @@
       <a href="{{ url_for('alerts.list_alerts') }}" {% if request.blueprint == 'alerts' %}aria-current="page"{% endif %}>
         <i class="ph ph-warning-circle nav-icon" aria-hidden="true"></i><span>Alertas</span>
       </a>
+      <a href="{{ url_for('risks.index') }}" {% if request.blueprint == 'risks' %}aria-current="page"{% endif %}>
+        <i class="ph ph-chart-line-up nav-icon" aria-hidden="true"></i><span>Análisis de IA</span>
+      </a>
       <a href="{{ url_for('variables.list_variables') }}" {% if request.blueprint == 'variables' %}aria-current="page"{% endif %}>
         <i class="ph ph-gauge nav-icon" aria-hidden="true"></i><span>Variables</span>
       </a>
@@ -44,8 +47,8 @@
     </nav>
 
     <div class="sidebar-meta">
-      <span>Sprint 3</span>
-      <small>Monitoreo operativo</small>
+      <span>Sprint 4</span>
+      <small>Predicción local</small>
     </div>
   </aside>
 
@@ -58,7 +61,7 @@
         <div class="topbar-context">
           <span>Centro de control</span>
           <strong>
-            {% if request.blueprint == 'dashboard' %}Dashboard{% elif request.blueprint == 'measurements' %}Mediciones{% elif request.blueprint == 'alerts' %}Alertas{% elif request.blueprint == 'variables' %}Variables operativas{% elif request.endpoint == 'maintenance.maintenance_calendar' %}Calendario{% elif request.blueprint == 'maintenance' %}Mantenimientos{% elif request.blueprint == 'inventory' %}Inventario{% elif request.blueprint == 'classifications' %}Clasificaciones{% else %}Usuarios y roles{% endif %}
+            {% if request.blueprint == 'dashboard' %}Dashboard{% elif request.blueprint == 'measurements' %}Mediciones{% elif request.blueprint == 'alerts' %}Alertas{% elif request.blueprint == 'risks' %}Análisis de IA{% elif request.blueprint == 'variables' %}Variables operativas{% elif request.endpoint == 'maintenance.maintenance_calendar' %}Calendario{% elif request.blueprint == 'maintenance' %}Mantenimientos{% elif request.blueprint == 'inventory' %}Inventario{% elif request.blueprint == 'classifications' %}Clasificaciones{% else %}Usuarios y roles{% endif %}
           </strong>
         </div>
       </div>

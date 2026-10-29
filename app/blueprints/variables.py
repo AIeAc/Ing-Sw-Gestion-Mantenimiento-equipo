@@ -4,6 +4,7 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, u
 from psycopg.errors import UniqueViolation
 
 from app.core.database import get_db
+from app.core.validation import is_identifier, is_label, is_safe_free_text, is_unit
 from app.repositories import variables
 
 from .auth import login_required, roles_required, validate_csrf
@@ -53,6 +54,16 @@ def _validate(data):
     for field, limit in limits.items():
         if len(data[field]) > limit:
             errors[field] = f"Usa {limit} caracteres o menos."
+    if data["codigo"] and not is_identifier(data["codigo"]):
+        errors["codigo"] = (
+            "Usa letras, números, puntos, guiones, diagonales o guion bajo; sin espacios."
+        )
+    if data["nombre"] and not is_label(data["nombre"]):
+        errors["nombre"] = "Usa letras, números y signos de separación comunes."
+    if data["unidad"] and not is_unit(data["unidad"]):
+        errors["unidad"] = "Usa una unidad válida, por ejemplo °C, bar, V o mm/s."
+    if data["descripcion"] and not is_safe_free_text(data["descripcion"]):
+        errors["descripcion"] = "La descripción contiene caracteres no permitidos."
 
     minimum = _decimal_value(data["valor_minimo"], "valor_minimo", errors)
     maximum = _decimal_value(data["valor_maximo"], "valor_maximo", errors)

@@ -40,6 +40,7 @@
 .ph-funnel-simple::before { content: "\e268"; }
 .ph-gauge::before { content: "\e628"; }
 .ph-heartbeat::before { content: "\e2ac"; }
+.ph-info::before { content: "\e2ce"; }
 .ph-list::before { content: "\e2f0"; }
 .ph-magnifying-glass::before { content: "\e30c"; }
 .ph-package::before { content: "\e390"; }
@@ -49,11 +50,13 @@
 .ph-sign-out::before { content: "\e42a"; }
 .ph-squares-four::before { content: "\e464"; }
 .ph-tag::before { content: "\e478"; }
+.ph-trend-up::before { content: "\e4ae"; }
 .ph-upload-simple::before { content: "\e4c0"; }
 .ph-user-plus::before { content: "\e4d0"; }
 .ph-users-three::before { content: "\e68e"; }
 .ph-warning-circle::before { content: "\e4e2"; }
 .ph-warning::before { content: "\e4e0"; }
+.ph-warning-octagon::before { content: "\e4e4"; }
 .ph-wave-sine::before { content: "\ea9a"; }
 .ph-wrench::before { content: "\e5d4"; }
 .ph-x::before { content: "\e4f6"; }

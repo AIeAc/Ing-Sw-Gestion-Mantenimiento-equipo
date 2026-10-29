@@ -6,12 +6,12 @@
 {% block content %}
 <header class="page-header compact-header"><div><a class="back-link" href="{{ url_for('classifications.list_categories') }}">Volver a clasificaciones</a><h1>{{ 'Nueva categoría' if creating else 'Editar categoría' }}</h1><p>Define una clasificación clara para los equipos.</p></div></header>
 
-<form class="record-form narrow-form" method="post" novalidate>
+<form class="record-form narrow-form" method="post">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <section class="form-section">
     <div class="field">
       <label for="nombre">Nombre <span>(obligatorio)</span></label>
-      <input id="nombre" name="nombre" value="{{ data.nombre }}" maxlength="100" required {% if errors.nombre %}aria-invalid="true" aria-describedby="nombre-error"{% endif %}>
+      <input id="nombre" name="nombre" value="{{ data.nombre }}" maxlength="100" required pattern="[A-Za-zÀ-ÖØ-öø-ÿĀ-ž0-9 .,'’\(\)\/_&amp;\+\-]+" title="Usa letras, números y signos de separación comunes." {% if errors.nombre %}aria-invalid="true" aria-describedby="nombre-error"{% endif %}>
       {% if errors.nombre %}<p class="field-error" id="nombre-error">{{ errors.nombre }}</p>{% endif %}
     </div>
     <div class="field">

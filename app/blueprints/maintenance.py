@@ -6,6 +6,7 @@ from flask import Blueprint, abort, flash, g, redirect, render_template, request
 from psycopg import IntegrityError
 
 from app.core.database import get_db
+from app.core.validation import is_safe_free_text
 from app.repositories import equipment, maintenance
 
 from .auth import login_required, validate_csrf
@@ -74,10 +75,14 @@ def _parse_datetime(value, field, errors):
 
 def _parse_id(value, field, message, errors):
     try:
-        return int(value)
+        parsed = int(value)
     except (TypeError, ValueError):
         errors[field] = message
         return None
+    if parsed <= 0:
+        errors[field] = message
+        return None
+    return parsed
 
 
 def _validate(data):
@@ -101,6 +106,14 @@ def _validate(data):
         errors["estado"] = "Selecciona un estado válido."
     if not data["descripcion"]:
         errors["descripcion"] = "Describe el mantenimiento a realizar."
+    elif len(data["descripcion"]) > 2000:
+        errors["descripcion"] = "Usa 2000 caracteres o menos."
+    elif not is_safe_free_text(data["descripcion"]):
+        errors["descripcion"] = "La descripción contiene caracteres no permitidos."
+    if len(data["observaciones"]) > 2000:
+        errors["observaciones"] = "Usa 2000 caracteres o menos."
+    elif data["observaciones"] and not is_safe_free_text(data["observaciones"]):
+        errors["observaciones"] = "Las observaciones contienen caracteres no permitidos."
 
     scheduled_at = _parse_datetime(
         data["fecha_programada"], "fecha_programada", errors

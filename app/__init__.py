@@ -11,8 +11,10 @@ from .blueprints import (
     inventory,
     maintenance,
     measurements,
+    risks,
     variables,
 )
+from .commands import model as model_commands
 from .commands import users as user_commands
 from .core import database, errors
 
@@ -36,11 +38,15 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY=os.environ.get("SECRET_KEY"),
         DATABASE_URL=os.environ.get("DATABASE_URL", DEFAULT_DATABASE_URL),
+        RISK_MODEL_PATH=os.environ.get(
+            "RISK_MODEL_PATH", os.path.join(app.instance_path, "modelo_riesgo.joblib")
+        ),
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=os.environ.get("SESSION_COOKIE_SECURE", "").lower()
         in {"1", "true", "yes"},
-        MAX_CONTENT_LENGTH=2 * 1024 * 1024,
+        # Allow multipart headers; the CSV itself is limited to 2 MB in its parser.
+        MAX_CONTENT_LENGTH=(2 * 1024 * 1024) + (64 * 1024),
     )
 
     if test_config is not None:
@@ -57,9 +63,11 @@ def create_app(test_config=None):
     variables.init_app(app)
     measurements.init_app(app)
     alerts.init_app(app)
+    risks.init_app(app)
     dashboard.init_app(app)
     classifications.init_app(app)
     admin.init_app(app)
     errors.init_app(app)
+    model_commands.init_app(app)
     user_commands.init_app(app)
     return app

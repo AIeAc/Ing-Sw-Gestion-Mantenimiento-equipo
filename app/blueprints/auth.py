@@ -15,6 +15,7 @@ from flask import (
 )
 from werkzeug.security import check_password_hash
 
+from app.core.validation import is_email
 from app.repositories import users
 
 bp = Blueprint("auth", __name__)
@@ -79,7 +80,14 @@ def login():
 
         email = request.form.get("correo", "").strip().lower()
         password = request.form.get("contrasena", "")
-        user = users.find_active_user_by_email(email) if email and password else None
+        credentials_have_valid_shape = (
+            is_email(email) and bool(password) and len(password) <= 1024
+        )
+        user = (
+            users.find_active_user_by_email(email)
+            if credentials_have_valid_shape
+            else None
+        )
 
         password_is_valid = False
         if user is not None:

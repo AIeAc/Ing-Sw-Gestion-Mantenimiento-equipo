@@ -1,5 +1,6 @@
 from flask import Blueprint, abort, flash, g, redirect, render_template, request, url_for
 
+from app.core.validation import is_safe_free_text
 from app.repositories import alerts
 
 from .auth import login_required, validate_csrf
@@ -55,6 +56,12 @@ def alert_detail(alert_id):
             errors["estado"] = "Selecciona una resolución válida."
         if len(data["observaciones"]) > 2000:
             errors["observaciones"] = "Usa 2000 caracteres o menos."
+        elif data["observaciones"] and not is_safe_free_text(
+            data["observaciones"]
+        ):
+            errors["observaciones"] = (
+                "Las observaciones contienen caracteres no permitidos."
+            )
         if not errors:
             updated = alerts.resolve_alert(
                 alert_id,

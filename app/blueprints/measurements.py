@@ -29,6 +29,7 @@ REQUIRED_COLUMNS = {
     "medido_en",
 }
 MAX_CSV_ROWS = 2000
+MAX_CSV_BYTES = 2 * 1024 * 1024
 
 
 def _build_measurement_analysis(items):
@@ -179,8 +180,11 @@ def _measured_at(raw_value):
 
 def _parse_csv(file_storage):
     errors = []
+    raw_content = file_storage.read(MAX_CSV_BYTES + 1)
+    if len(raw_content) > MAX_CSV_BYTES:
+        return [], 0, ["El archivo excede el límite de 2 MB."]
     try:
-        content = file_storage.read().decode("utf-8-sig")
+        content = raw_content.decode("utf-8-sig")
     except UnicodeDecodeError:
         return [], 0, ["El archivo debe estar codificado en UTF-8."]
 

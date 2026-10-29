@@ -4,3 +4,5 @@ __pycache__/
 *.py[cod]
 node_modules/
 .vite/
+instance/modelo_riesgo.joblib
+instance/modelo_riesgo.joblib.tmp

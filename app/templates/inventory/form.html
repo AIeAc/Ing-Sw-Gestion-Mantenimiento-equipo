@@ -19,7 +19,7 @@
   </div>
 {% endif %}
 
-<form class="record-form" method="post" novalidate>
+<form class="record-form" method="post">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
   <section class="form-section" aria-labelledby="identification-title">
@@ -30,12 +30,12 @@
     <div class="form-grid">
       <div class="field">
         <label for="codigo_interno">Código interno <span>(obligatorio)</span></label>
-        <input id="codigo_interno" name="codigo_interno" value="{{ data.codigo_interno }}" maxlength="50" required {% if errors.codigo_interno %}aria-invalid="true" aria-describedby="codigo-error"{% endif %}>
+        <input id="codigo_interno" name="codigo_interno" value="{{ data.codigo_interno }}" maxlength="50" required pattern="[A-Za-z0-9][A-Za-z0-9._\/\-]*" title="Usa letras, números, puntos, guiones, diagonales o guion bajo; sin espacios." {% if errors.codigo_interno %}aria-invalid="true" aria-describedby="codigo-error"{% endif %}>
         {% if errors.codigo_interno %}<p class="field-error" id="codigo-error">{{ errors.codigo_interno }}</p>{% endif %}
       </div>
       <div class="field">
         <label for="nombre">Nombre <span>(obligatorio)</span></label>
-        <input id="nombre" name="nombre" value="{{ data.nombre }}" maxlength="150" required {% if errors.nombre %}aria-invalid="true" aria-describedby="nombre-error"{% endif %}>
+        <input id="nombre" name="nombre" value="{{ data.nombre }}" maxlength="150" required pattern="[A-Za-zÀ-ÖØ-öø-ÿĀ-ž0-9 .,'’\(\)\/_&amp;\+\-]+" title="Usa letras, números y signos de separación comunes." {% if errors.nombre %}aria-invalid="true" aria-describedby="nombre-error"{% endif %}>
         {% if errors.nombre %}<p class="field-error" id="nombre-error">{{ errors.nombre }}</p>{% endif %}
       </div>
       <div class="field">
@@ -68,17 +68,17 @@
     <div class="form-grid">
       <div class="field">
         <label for="marca">Marca</label>
-        <input id="marca" name="marca" value="{{ data.marca }}" maxlength="100" {% if errors.marca %}aria-invalid="true" aria-describedby="marca-error"{% endif %}>
+        <input id="marca" name="marca" value="{{ data.marca }}" maxlength="100" pattern="[A-Za-zÀ-ÖØ-öø-ÿĀ-ž0-9 .,'’\(\)\/_&amp;\+#:%°·²³\-]+" title="Usa letras, números y signos técnicos comunes." {% if errors.marca %}aria-invalid="true" aria-describedby="marca-error"{% endif %}>
         {% if errors.marca %}<p class="field-error" id="marca-error">{{ errors.marca }}</p>{% endif %}
       </div>
       <div class="field">
         <label for="modelo">Modelo</label>
-        <input id="modelo" name="modelo" value="{{ data.modelo }}" maxlength="100" {% if errors.modelo %}aria-invalid="true" aria-describedby="modelo-error"{% endif %}>
+        <input id="modelo" name="modelo" value="{{ data.modelo }}" maxlength="100" pattern="[A-Za-zÀ-ÖØ-öø-ÿĀ-ž0-9 .,'’\(\)\/_&amp;\+#:%°·²³\-]+" title="Usa letras, números y signos técnicos comunes." {% if errors.modelo %}aria-invalid="true" aria-describedby="modelo-error"{% endif %}>
         {% if errors.modelo %}<p class="field-error" id="modelo-error">{{ errors.modelo }}</p>{% endif %}
       </div>
       <div class="field">
         <label for="numero_serie">Número de serie</label>
-        <input id="numero_serie" name="numero_serie" value="{{ data.numero_serie }}" maxlength="100" {% if errors.numero_serie %}aria-invalid="true" aria-describedby="serie-error"{% endif %}>
+        <input id="numero_serie" name="numero_serie" value="{{ data.numero_serie }}" maxlength="100" pattern="[A-Za-zÀ-ÖØ-öø-ÿĀ-ž0-9 .,'’\(\)\/_&amp;\+#:%°·²³\-]+" title="Usa letras, números y signos técnicos comunes." {% if errors.numero_serie %}aria-invalid="true" aria-describedby="serie-error"{% endif %}>
         {% if errors.numero_serie %}<p class="field-error" id="serie-error">{{ errors.numero_serie }}</p>{% endif %}
       </div>
       <div class="field">
@@ -97,12 +97,13 @@
     <div class="form-grid">
       <div class="field field-wide">
         <label for="ubicacion">Ubicación</label>
-        <input id="ubicacion" name="ubicacion" value="{{ data.ubicacion }}" maxlength="150" placeholder="Ej. Planta 1, línea A" {% if errors.ubicacion %}aria-invalid="true" aria-describedby="ubicacion-error"{% endif %}>
+        <input id="ubicacion" name="ubicacion" value="{{ data.ubicacion }}" maxlength="150" pattern="[A-Za-zÀ-ÖØ-öø-ÿĀ-ž0-9 .,'’\(\)\/_&amp;\+#:%°·²³\-]+" title="Usa letras, números y signos técnicos comunes." placeholder="Ej. Planta 1, línea A" {% if errors.ubicacion %}aria-invalid="true" aria-describedby="ubicacion-error"{% endif %}>
         {% if errors.ubicacion %}<p class="field-error" id="ubicacion-error">{{ errors.ubicacion }}</p>{% endif %}
       </div>
       <div class="field field-wide">
         <label for="descripcion">Descripción</label>
-        <textarea id="descripcion" name="descripcion" rows="4">{{ data.descripcion }}</textarea>
+        <textarea id="descripcion" name="descripcion" rows="4" maxlength="2000" {% if errors.descripcion %}aria-invalid="true" aria-describedby="descripcion-error"{% endif %}>{{ data.descripcion }}</textarea>
+        {% if errors.descripcion %}<p class="field-error" id="descripcion-error">{{ errors.descripcion }}</p>{% endif %}
       </div>
     </div>
   </section>

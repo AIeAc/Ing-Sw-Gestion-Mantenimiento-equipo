@@ -4,6 +4,11 @@
 
 {% block body %}
 <main class="login-layout">
+  <div class="login-color-motion" aria-hidden="true">
+    <span class="login-color-blob login-color-blob-primary"></span>
+    <span class="login-color-blob login-color-blob-mint"></span>
+    <span class="login-color-blob login-color-blob-warm"></span>
+  </div>
   <section class="brand-panel" aria-label="Presentación del sistema">
     <div class="brand-content">
       <div class="login-brand">
@@ -20,7 +25,7 @@
         <div><i class="ph ph-warning-circle" aria-hidden="true"></i><span><strong>Alertas</strong><small>Seguimiento oportuno</small></span></div>
       </div>
 
-      <div class="brand-assurance"><i class="ph ph-shield-check" aria-hidden="true"></i><span>Acceso protegido para tu equipo</span><small>Sprint 3</small></div>
+      <div class="brand-assurance"><i class="ph ph-shield-check" aria-hidden="true"></i><span>Acceso protegido para tu equipo</span><small>Sprint 4</small></div>
     </div>
   </section>
 
@@ -40,7 +45,7 @@
         {% endfor %}
       {% endwith %}
 
-      <form method="post" novalidate aria-labelledby="login-title">
+      <form method="post" aria-labelledby="login-title">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <label for="correo">Correo electrónico</label>
@@ -64,6 +69,7 @@
             type="password"
             autocomplete="current-password"
             placeholder="Tu contraseña"
+            maxlength="1024"
             required
           >
           <button class="password-toggle" type="button" data-password-toggle="contrasena" aria-pressed="false" aria-label="Mostrar contraseña">

@@ -11,7 +11,7 @@
 <section class="filter-panel" aria-labelledby="variable-filters-title">
   <h2 id="variable-filters-title" class="sr-only">Buscar y filtrar variables</h2>
   <form class="filter-grid variable-filter-grid" method="get">
-    <div class="field field-search"><label for="q">Buscar</label><div class="input-with-icon"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="q" name="q" type="search" value="{{ filters.q }}" placeholder="Código, nombre o unidad"></div></div>
+    <div class="field field-search"><label for="q">Buscar</label><div class="input-with-icon"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="q" name="q" type="search" value="{{ filters.q }}" maxlength="100" placeholder="Código, nombre o unidad"></div></div>
     <div class="field"><label for="estado">Estado</label><select id="estado" name="estado"><option value="">Todas</option><option value="ACTIVAS" {% if filters.estado == 'ACTIVAS' %}selected{% endif %}>Activas</option><option value="INACTIVAS" {% if filters.estado == 'INACTIVAS' %}selected{% endif %}>Inactivas</option></select></div>
     <div class="filter-actions"><button class="button" type="submit"><i class="ph ph-funnel-simple" aria-hidden="true"></i><span>Aplicar</span></button>{% if filters.q or filters.estado %}<a class="button button-secondary" href="{{ url_for('variables.list_variables') }}">Limpiar</a>{% endif %}</div>
   </form>

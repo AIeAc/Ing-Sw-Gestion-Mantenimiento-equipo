@@ -20,35 +20,37 @@ La visión completa del sistema contempla:
 
 ## Sprint actual
 
-El sprint actual es el **Sprint 3**. Los Sprints 1 y 2 ya entregaron las bases
-técnicas, usuarios, roles, inventario y mantenimiento.
+El sprint actual es el **Sprint 4**. Los Sprints 1, 2 y 3 ya entregaron las
+bases técnicas, usuarios, roles, inventario, mantenimiento, variables
+operativas, mediciones, alertas por rango e indicadores básicos.
 
-El alcance autorizado para el Sprint 3 se limita a:
+El alcance autorizado para el Sprint 4 se limita a:
 
-- Catálogo de variables operativas.
-- Simulación o importación de datos operativos.
-- Validación y almacenamiento de mediciones.
-- Consulta de mediciones para gráficas.
-- Alertas cuando una medición supere su rango permitido.
-- Dashboard básico con disponibilidad, fallas y costos.
-- Pruebas y correcciones de alertas e indicadores.
+- Recopilación y limpieza de los datos disponibles para entrenamiento.
+- Selección documentada de variables y del resultado que se predecirá.
+- División reproducible de los datos en entrenamiento y prueba.
+- Entrenamiento local de uno o dos algoritmos predictivos sencillos.
+- Evaluación y selección del modelo con mejores resultados.
+- Integración del modelo local con la aplicación existente.
+- Visualización del nivel estimado de riesgo por equipo.
+- Pruebas del entrenamiento, integración y presentación de riesgos.
 
 ## Restricción obligatoria de alcance
 
 No agregar, adelantar ni implementar funciones que estén fuera del alcance del sprint actual, aunque formen parte de la visión completa del sistema.
 
-En particular, durante el Sprint 3 no se deben implementar modelos de
-predicción de fallas, programación automática de mantenimientos, alertas
-predictivas ni reportes ejecutivos.
+En particular, durante el Sprint 4 no se deben implementar programación
+automática de mantenimientos, alertas predictivas automáticas, sensores o
+integraciones IoT, reentrenamiento automático ni reportes ejecutivos.
 
 Antes de realizar cualquier cambio, comprobar que pertenece directamente al
-alcance del Sprint 3. Si una solicitud resulta ambigua o parece corresponder a
+alcance del Sprint 4. Si una solicitud resulta ambigua o parece corresponder a
 un sprint posterior, detenerse y pedir confirmación antes de implementarla.
 
 No crear infraestructura, modelos, endpoints, pantallas ni lógica especulativa para funcionalidades futuras. Solo se permiten decisiones técnicas y componentes estrictamente necesarios para entregar el alcance actual.
 
 ## Estado del desarrollo
 
-Los Sprints 1 y 2 están implementados. El trabajo actual debe extenderlos de
-forma incremental, conservando los datos existentes y sin adelantar módulos
-de sprints posteriores.
+Los Sprints 1, 2 y 3 están implementados. El trabajo actual debe extenderlos
+de forma incremental, conservando los datos existentes y sin adelantar
+módulos de sprints posteriores.

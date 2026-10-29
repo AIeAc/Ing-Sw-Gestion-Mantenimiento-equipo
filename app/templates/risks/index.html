@@ -1,0 +1,90 @@
+{% extends "app_base.html" %}
+{% block title %}Prioridad y costos | Nautilus{% endblock %}
+
+{% block content %}
+<header class="page-header risk-page-header">
+  <div>
+    <p class="eyebrow">Análisis de IA local</p>
+    <h1>Prioridad y costos de falla</h1>
+    <p>Ordena la atención de los equipos por riesgo operativo e impacto económico estimado.</p>
+  </div>
+  {% if metadata %}
+    <div class="model-state" role="status"><i class="ph ph-check-circle" aria-hidden="true"></i><span>Modelo disponible<small>{{ metadata.selected_model }}</small></span></div>
+  {% endif %}
+</header>
+
+<section class="scope-notice" aria-labelledby="risk-scope-title">
+  <i class="ph ph-info" aria-hidden="true"></i>
+  <div><h2 id="risk-scope-title">Cómo se recomienda la prioridad</h2><p>La prioridad combina 80% del riesgo de correctivo en 30 días y 20% del impacto relativo del costo. El costo se estima con correctivos completados del equipo, su categoría o el promedio general. Es una recomendación informativa: no modifica presupuestos ni programa servicios.</p></div>
+</section>
+
+{% if model_error %}
+  <section class="content-section model-empty" aria-labelledby="model-empty-title">
+    <i class="ph ph-chart-line-up empty-state-icon" aria-hidden="true"></i>
+    <h2 id="model-empty-title">El modelo local necesita entrenamiento</h2>
+    <p>{{ model_error }}</p>
+    <div class="command-copy" aria-label="Comando para entrenar el modelo"><code>flask --app app entrenar-modelo-riesgo</code></div>
+    <p class="supporting-note">Ejecuta el comando una vez en esta computadora y vuelve a cargar la página.</p>
+  </section>
+{% else %}
+  <section class="risk-summary" aria-label="Resumen de prioridad y exposición económica">
+    <article><span class="risk-dot priority-dot-immediate" aria-hidden="true"></span><div><small>Atención inmediata</small><strong>{{ decision_summary.immediate }}</strong></div></article>
+    <article><span class="risk-dot priority-dot-high" aria-hidden="true"></span><div><small>Prioridad alta</small><strong>{{ decision_summary.high }}</strong></div></article>
+    <article><span class="risk-dot priority-dot-exposure" aria-hidden="true"></span><div><small>Exposición estimada</small><strong>${{ decision_summary.financial_exposure|number }}</strong></div></article>
+    <article><span class="risk-dot priority-dot-cost" aria-hidden="true"></span><div><small>Costo correctivo promedio</small><strong>${{ decision_summary.average_cost|number }}</strong></div></article>
+  </section>
+
+  <div class="risk-layout">
+    <section class="content-section risk-results" aria-labelledby="risk-results-title">
+      <div class="section-heading"><div><h2 id="risk-results-title">Orden recomendado de atención</h2><p>{{ risk_items|length }} equipos ordenados por prioridad, riesgo y exposición económica</p></div></div>
+      {% if risk_items %}
+        <div class="table-scroll" tabindex="0" aria-label="Tabla de riesgo estimado por equipo">
+          <table class="risk-table">
+            <thead><tr><th scope="col">Equipo</th><th scope="col">Prioridad</th><th scope="col">Riesgo</th><th scope="col">Costo estimado</th><th scope="col">Exposición</th><th scope="col">Factores observados</th></tr></thead>
+            <tbody>
+              {% for item in risk_items %}
+                <tr>
+                  <td><strong class="table-primary">{{ item.equipment.nombre }}</strong><span class="table-secondary">{{ item.equipment.codigo_interno }} · {{ item.equipment.measurement_count }} mediciones recientes</span></td>
+                  <td><span class="priority-level priority-level-{{ item.priority|lower }}"><span aria-hidden="true">{{ '1' if item.priority == 'INMEDIATA' else '2' if item.priority == 'ALTA' else '3' if item.priority == 'MEDIA' else '4' if item.priority == 'BAJA' else '—' }}</span>{{ item.priority_label }}</span></td>
+                  <td class="risk-score-cell"><span class="risk-level risk-level-{{ item.level|lower }}"><i class="ph {{ 'ph-warning' if item.level == 'ALTO' else 'ph-warning-circle' if item.level == 'MEDIO' else 'ph-check-circle' if item.level == 'BAJO' else 'ph-info' }}" aria-hidden="true"></i>{{ item.level_label }}</span>
+                    {% if item.percentage is not none %}
+                      <strong>{{ item.percentage|number }}%</strong>
+                      <progress class="risk-progress risk-progress-{{ item.level|lower }}" max="100" value="{{ item.percentage }}" aria-label="Índice estimado de {{ item.percentage }} por ciento"></progress>
+                    {% else %}
+                      <span class="table-secondary">Sin cálculo</span>
+                    {% endif %}
+                  </td>
+                  <td class="cost-cell"><strong>${{ item.estimated_cost|number }}</strong><span>{{ item.cost_source_label }} · {{ item.cost_observations }} {{ 'registro' if item.cost_observations == 1 else 'registros' }}</span></td>
+                  <td class="cost-cell exposure-cell">{% if item.financial_exposure is not none %}<strong>${{ item.financial_exposure|number }}</strong><span>riesgo × costo</span>{% else %}<span>Sin cálculo</span>{% endif %}</td>
+                  <td><ul class="risk-reasons">{% for reason in item.reasons %}<li>{{ reason }}</li>{% endfor %}</ul></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state" role="status"><i class="ph ph-package empty-state-icon" aria-hidden="true"></i><h3>No hay equipos disponibles</h3><p>Registra equipos y mediciones para calcular el riesgo.</p></div>
+      {% endif %}
+    </section>
+
+    <aside class="content-section model-card" aria-labelledby="model-card-title">
+      <div class="section-heading"><div><p class="eyebrow">Trazabilidad</p><h2 id="model-card-title">Ficha del modelo</h2></div></div>
+      <dl class="model-facts">
+        <div><dt>Seleccionado</dt><dd>{{ metadata.selected_model }}</dd></div>
+        <div><dt>Objetivo</dt><dd>{{ metadata.target }}</dd></div>
+        <div><dt>Datos</dt><dd>{{ metadata.dataset.samples }} casos · {{ metadata.dataset.historical_samples|default(0) }} históricos + {{ metadata.dataset.synthetic_samples|default(metadata.dataset.samples) }} simulados</dd></div>
+        <div><dt>División</dt><dd>{{ metadata.dataset.training_samples }} entrenamiento · {{ metadata.dataset.test_samples }} prueba</dd></div>
+        <div><dt>Entrenamiento</dt><dd>{{ metadata.trained_at.strftime('%d/%m/%Y · %H:%M UTC') }}</dd></div>
+      </dl>
+      <h3>Resultados en prueba</h3>
+      <div class="model-metrics" aria-label="Métricas del modelo seleccionado">
+        <div><span>F1</span><strong>{{ '%.3f'|format(metadata.metrics.f1) }}</strong></div>
+        <div><span>Recall</span><strong>{{ '%.3f'|format(metadata.metrics.recall) }}</strong></div>
+        <div><span>Precisión</span><strong>{{ '%.3f'|format(metadata.metrics.precision) }}</strong></div>
+        <div><span>Exactitud</span><strong>{{ '%.3f'|format(metadata.metrics.accuracy) }}</strong></div>
+      </div>
+      <details class="model-comparison"><summary>Comparación de algoritmos</summary><div class="table-scroll"><table><thead><tr><th>Modelo</th><th>F1</th><th>Recall</th></tr></thead><tbody>{% for name, metrics in metadata.evaluations.items() %}<tr><td>{{ name }}</td><td>{{ '%.3f'|format(metrics.f1) }}</td><td>{{ '%.3f'|format(metrics.recall) }}</td></tr>{% endfor %}</tbody></table></div></details>
+    </aside>
+  </div>
+{% endif %}
+{% endblock %}

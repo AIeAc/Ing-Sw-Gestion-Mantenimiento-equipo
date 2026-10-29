@@ -5,7 +5,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from app import create_app
-from app.blueprints.measurements import _build_measurement_analysis
+from app.blueprints.measurements import MAX_CSV_BYTES, _build_measurement_analysis
 
 
 class OperationalModuleTests(unittest.TestCase):
@@ -117,6 +117,30 @@ class OperationalModuleTests(unittest.TestCase):
         self.assertEqual(filename, "mediciones.csv")
         self.assertEqual(user_id, 1)
         self.assertIn("equipo inexistente", errors[0])
+
+    @patch("app.blueprints.auth.users.find_active_user_by_id")
+    @patch("app.blueprints.measurements.measurements.list_recent_batches", return_value=[])
+    @patch("app.blueprints.measurements.measurements.import_batch")
+    def test_csv_larger_than_two_megabytes_is_rejected(
+        self, import_batch, _batches, find_user
+    ):
+        find_user.return_value = self.admin
+        response = self.client.post(
+            "/mediciones/importar",
+            data={
+                "csrf_token": "valid-token",
+                "archivo": (
+                    io.BytesIO(b"x" * (MAX_CSV_BYTES + 1)),
+                    "mediciones.csv",
+                ),
+            },
+            content_type="multipart/form-data",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"excede el l\xc3\xADmite de 2 MB", response.data)
+        import_batch.assert_not_called()
+        response.close()
 
     @patch("app.blueprints.auth.users.find_active_user_by_id")
     @patch("app.blueprints.measurements.measurements.list_variable_options", return_value=[])

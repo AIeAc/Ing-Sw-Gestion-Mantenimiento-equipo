@@ -13,6 +13,12 @@ from flask import (
 from psycopg.errors import ForeignKeyViolation, UniqueViolation
 
 from app.core.database import get_db
+from app.core.validation import (
+    is_identifier,
+    is_label,
+    is_safe_free_text,
+    is_technical_text,
+)
 from app.repositories import categories, equipment
 
 from .auth import login_required, validate_csrf
@@ -57,11 +63,17 @@ def _validate_equipment(data):
         errors["codigo_interno"] = "Ingresa el código interno."
     elif len(data["codigo_interno"]) > 50:
         errors["codigo_interno"] = "Usa 50 caracteres o menos."
+    elif not is_identifier(data["codigo_interno"]):
+        errors["codigo_interno"] = (
+            "Usa letras, números, puntos, guiones, diagonales o guion bajo; sin espacios."
+        )
 
     if not data["nombre"]:
         errors["nombre"] = "Ingresa el nombre del equipo."
     elif len(data["nombre"]) > 150:
         errors["nombre"] = "Usa 150 caracteres o menos."
+    elif not is_label(data["nombre"]):
+        errors["nombre"] = "Usa letras, números y signos de separación comunes."
 
     category_id = None
     try:
@@ -85,6 +97,13 @@ def _validate_equipment(data):
     for field, limit in limits.items():
         if len(data[field]) > limit:
             errors[field] = f"Usa {limit} caracteres o menos."
+        elif data[field] and not is_technical_text(data[field]):
+            errors[field] = "Usa letras, números y signos técnicos comunes."
+
+    if len(data["descripcion"]) > 2000:
+        errors["descripcion"] = "Usa 2000 caracteres o menos."
+    elif data["descripcion"] and not is_safe_free_text(data["descripcion"]):
+        errors["descripcion"] = "La descripción contiene caracteres no permitidos."
 
     parsed_date = None
     if data["fecha_adquisicion"]:

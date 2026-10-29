@@ -1,16 +1,14 @@
-import re
-
 from flask import Blueprint, abort, flash, g, redirect, render_template, request, url_for
 from psycopg.errors import UniqueViolation
 from werkzeug.security import generate_password_hash
 
 from app.core.database import get_db
+from app.core.validation import is_email, is_person_name
 from app.repositories import users
 
 from .auth import roles_required, validate_csrf
 
 bp = Blueprint("admin", __name__, url_prefix="/usuarios")
-EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
 
 def _form_data(source, include_password=False):
@@ -33,14 +31,16 @@ def _validate(data, include_password=False):
         errors["nombre"] = "Ingresa el nombre."
     elif len(data["nombre"]) > 100:
         errors["nombre"] = "Usa 100 caracteres o menos."
+    elif not is_person_name(data["nombre"]):
+        errors["nombre"] = "Usa únicamente letras, espacios, puntos, guiones o apóstrofes."
     if not data["apellidos"]:
         errors["apellidos"] = "Ingresa los apellidos."
     elif len(data["apellidos"]) > 150:
         errors["apellidos"] = "Usa 150 caracteres o menos."
-    if not EMAIL_PATTERN.fullmatch(data["correo"]):
+    elif not is_person_name(data["apellidos"]):
+        errors["apellidos"] = "Usa únicamente letras, espacios, puntos, guiones o apóstrofes."
+    if not is_email(data["correo"]):
         errors["correo"] = "Ingresa un correo válido."
-    elif len(data["correo"]) > 254:
-        errors["correo"] = "Usa 254 caracteres o menos."
 
     try:
         role_id = int(data["id_rol"])
@@ -53,6 +53,8 @@ def _validate(data, include_password=False):
     if include_password:
         if len(data["contrasena"]) < 10:
             errors["contrasena"] = "Usa al menos 10 caracteres."
+        elif len(data["contrasena"]) > 128:
+            errors["contrasena"] = "Usa 128 caracteres o menos."
         elif data["contrasena"] != data["confirmacion"]:
             errors["confirmacion"] = "Las contraseñas no coinciden."
 
