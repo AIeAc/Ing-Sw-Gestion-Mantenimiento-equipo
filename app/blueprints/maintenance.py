@@ -6,6 +6,7 @@ from flask import Blueprint, abort, flash, g, redirect, render_template, request
 from psycopg import IntegrityError
 
 from app.core.database import get_db
+from app.core.navigation import safe_local_url
 from app.core.validation import is_safe_free_text
 from app.repositories import equipment, maintenance
 
@@ -199,6 +200,9 @@ def list_maintenance():
 @login_required
 def create_maintenance():
     options = _form_options()
+    return_to = safe_local_url(
+        request.args.get("next"), url_for("maintenance.list_maintenance")
+    )
     if not options["equipment_items"] or not options["technicians"]:
         missing = "un equipo" if not options["equipment_items"] else "un técnico activo"
         flash(f"Se requiere {missing} para registrar un mantenimiento.", "warning")
@@ -226,11 +230,11 @@ def create_maintenance():
                 )
             else:
                 flash("Mantenimiento registrado correctamente.", "success")
+                detail_parameters = {"maintenance_id": maintenance_id}
+                if request.args.get("next"):
+                    detail_parameters["next"] = return_to
                 return redirect(
-                    url_for(
-                        "maintenance.maintenance_detail",
-                        maintenance_id=maintenance_id,
-                    )
+                    url_for("maintenance.maintenance_detail", **detail_parameters)
                 )
 
     return render_template(
@@ -240,6 +244,7 @@ def create_maintenance():
         types=MAINTENANCE_TYPES,
         statuses=MAINTENANCE_STATUSES,
         mode="create",
+        return_to=return_to,
         **options,
     )
 
@@ -255,6 +260,9 @@ def maintenance_detail(maintenance_id):
         item=item,
         types=dict(MAINTENANCE_TYPES),
         statuses=dict(MAINTENANCE_STATUSES),
+        return_to=safe_local_url(
+            request.args.get("next"), url_for("maintenance.list_maintenance")
+        ),
     )
 
 
@@ -266,6 +274,10 @@ def edit_maintenance(maintenance_id):
         abort(404)
 
     options = _form_options()
+    return_to = safe_local_url(
+        request.args.get("next"),
+        url_for("maintenance.maintenance_detail", maintenance_id=maintenance_id),
+    )
     data = _form_data(request.form if request.method == "POST" else item)
     errors = {}
     if request.method == "POST":
@@ -286,6 +298,7 @@ def edit_maintenance(maintenance_id):
                     url_for(
                         "maintenance.maintenance_detail",
                         maintenance_id=maintenance_id,
+                        next=return_to,
                     )
                 )
 
@@ -297,6 +310,7 @@ def edit_maintenance(maintenance_id):
         statuses=MAINTENANCE_STATUSES,
         mode="edit",
         item=item,
+        return_to=return_to,
         **options,
     )
 

@@ -6,7 +6,7 @@
 {% block content %}
 <header class="page-header compact-header"><div><a class="back-link" href="{{ url_for('classifications.list_categories') }}">Volver a clasificaciones</a><h1>{{ 'Nueva categoría' if creating else 'Editar categoría' }}</h1><p>Define una clasificación clara para los equipos.</p></div></header>
 
-<form class="record-form narrow-form" method="post">
+<form class="record-form narrow-form" method="post" data-guard-unsaved>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <section class="form-section">
     <div class="field">

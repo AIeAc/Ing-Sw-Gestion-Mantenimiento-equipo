@@ -43,6 +43,38 @@ def equipment_row(measurement_count=20, estado="OPERATIVO"):
     }
 
 
+def model_artifact():
+    return {
+        "model": FixedProbabilityModel(0.78),
+        "risk_thresholds": {"medium": 0.40, "high": 0.70},
+        "selected_model": "Random Forest",
+        "trained_at": "2026-10-29T12:00:00+00:00",
+        "target": "Correctivo en 30 días",
+        "horizon_days": 30,
+        "dataset": {
+            "samples": 600,
+            "training_samples": 480,
+            "test_samples": 120,
+        },
+        "evaluations": {
+            "Random Forest": {
+                "accuracy": 0.84,
+                "precision": 0.81,
+                "recall": 0.82,
+                "f1": 0.815,
+                "confusion_matrix": [[50, 10], [11, 49]],
+            },
+            "Regresión logística": {
+                "accuracy": 0.80,
+                "precision": 0.77,
+                "recall": 0.79,
+                "f1": 0.78,
+                "confusion_matrix": [[48, 12], [13, 47]],
+            },
+        },
+    }
+
+
 class RiskModelTests(unittest.TestCase):
     def test_synthetic_dataset_is_reproducible_and_clean(self):
         first_x, first_y = generate_synthetic_dataset(300, 17)
@@ -130,6 +162,7 @@ class RiskPageTests(unittest.TestCase):
             "correo": "ana@example.com",
             "rol": "Administrador",
         }
+        self.technician = {**self.admin, "rol": "Técnico"}
         with self.client.session_transaction() as session:
             session["user_id"] = 1
 
@@ -141,35 +174,7 @@ class RiskPageTests(unittest.TestCase):
     ):
         find_user.return_value = self.admin
         list_rows.return_value = [equipment_row()]
-        load_artifact.return_value = {
-            "model": FixedProbabilityModel(0.78),
-            "risk_thresholds": {"medium": 0.40, "high": 0.70},
-            "selected_model": "Random Forest",
-            "trained_at": "2026-10-29T12:00:00+00:00",
-            "target": "Correctivo en 30 días",
-            "horizon_days": 30,
-            "dataset": {
-                "samples": 600,
-                "training_samples": 480,
-                "test_samples": 120,
-            },
-            "evaluations": {
-                "Random Forest": {
-                    "accuracy": 0.84,
-                    "precision": 0.81,
-                    "recall": 0.82,
-                    "f1": 0.815,
-                    "confusion_matrix": [[50, 10], [11, 49]],
-                },
-                "Regresión logística": {
-                    "accuracy": 0.80,
-                    "precision": 0.77,
-                    "recall": 0.79,
-                    "f1": 0.78,
-                    "confusion_matrix": [[48, 12], [13, 47]],
-                },
-            },
-        }
+        load_artifact.return_value = model_artifact()
 
         response = self.client.get("/riesgos")
 
@@ -181,6 +186,30 @@ class RiskPageTests(unittest.TestCase):
         self.assertIn("Atención inmediata".encode(), response.data)
         self.assertIn(b"$8,000", response.data)
         self.assertIn("Exposición".encode(), response.data)
+
+    @patch("app.blueprints.auth.users.find_active_user_by_id")
+    @patch("app.blueprints.risks.load_model_artifact")
+    @patch("app.blueprints.risks.risks.list_equipment_feature_rows")
+    def test_technician_sees_only_operational_risk_information(
+        self, list_rows, load_artifact, find_user
+    ):
+        find_user.return_value = self.technician
+        list_rows.return_value = [equipment_row()]
+        load_artifact.return_value = model_artifact()
+
+        response = self.client.get("/riesgos")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Prioridad de atención".encode(), response.data)
+        self.assertIn("Cómo usar esta lista".encode(), response.data)
+        self.assertIn("Qué revisar".encode(), response.data)
+        self.assertIn("Riesgo alto".encode(), response.data)
+        self.assertNotIn(b"Random Forest", response.data)
+        self.assertNotIn("Regresión logística".encode(), response.data)
+        self.assertNotIn(b"F1", response.data)
+        self.assertNotIn(b"Recall", response.data)
+        self.assertNotIn("Costo estimado".encode(), response.data)
+        self.assertNotIn("Exposición".encode(), response.data)
 
     @patch("app.blueprints.auth.users.find_active_user_by_id")
     @patch("app.blueprints.risks.load_model_artifact")
@@ -198,6 +227,24 @@ class RiskPageTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"entrenar-modelo-riesgo", response.data)
         self.assertIn(b"Modelo no disponible", response.data)
+
+    @patch("app.blueprints.auth.users.find_active_user_by_id")
+    @patch("app.blueprints.risks.load_model_artifact")
+    @patch("app.blueprints.risks.risks.list_equipment_feature_rows", return_value=[])
+    def test_technician_does_not_see_training_instructions_when_model_is_missing(
+        self, _list_rows, load_artifact, find_user
+    ):
+        from app.ml.prediction import ModelUnavailableError
+
+        find_user.return_value = self.technician
+        load_artifact.side_effect = ModelUnavailableError("Modelo no disponible.")
+
+        response = self.client.get("/riesgos")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("El análisis no está disponible".encode(), response.data)
+        self.assertNotIn(b"entrenar-modelo-riesgo", response.data)
+        self.assertNotIn(b"Modelo no disponible", response.data)
 
 
 if __name__ == "__main__":

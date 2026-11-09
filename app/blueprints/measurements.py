@@ -244,12 +244,25 @@ def list_measurements():
     equipment_id = _positive_id(request.args.get("equipo"))
     variable_id = _positive_id(request.args.get("variable"))
     batch_id = _positive_id(request.args.get("lote"))
-    start_date = _date_value(request.args.get("desde", "").strip())
-    end_date = _date_value(request.args.get("hasta", "").strip())
+    raw_start_date = request.args.get("desde", "").strip()
+    raw_end_date = request.args.get("hasta", "").strip()
+    start_date = _date_value(raw_start_date)
+    end_date = _date_value(raw_end_date)
+    filter_error = None
+    if raw_start_date and start_date is None:
+        filter_error = "Ingresa una fecha inicial válida."
+    elif raw_end_date and end_date is None:
+        filter_error = "Ingresa una fecha final válida."
+    elif start_date and end_date and start_date > end_date:
+        filter_error = "La fecha inicial no puede ser posterior a la fecha final."
     exclusive_end = end_date + timedelta(days=1) if end_date else None
 
-    items = measurements.list_measurements(
-        equipment_id, variable_id, start_date, exclusive_end, batch_id
+    items = (
+        measurements.list_measurements(
+            equipment_id, variable_id, start_date, exclusive_end, batch_id
+        )
+        if filter_error is None
+        else []
     )
     chart_data = []
     measurement_analysis = None
@@ -279,15 +292,16 @@ def list_measurements():
         "measurements/list.html",
         measurement_items=items,
         equipment_items=measurements.list_equipment_options(),
-        variable_items=measurements.list_variable_options(),
+        variable_items=measurements.list_variable_options(equipment_id=equipment_id),
         chart_data=chart_data,
         chart_summary=chart_summary,
         measurement_analysis=measurement_analysis,
+        filter_error=filter_error,
         filters={
             "equipo": str(equipment_id or ""),
             "variable": str(variable_id or ""),
-            "desde": start_date.isoformat() if start_date else "",
-            "hasta": end_date.isoformat() if end_date else "",
+            "desde": raw_start_date,
+            "hasta": raw_end_date,
             "lote": str(batch_id or ""),
         },
     )

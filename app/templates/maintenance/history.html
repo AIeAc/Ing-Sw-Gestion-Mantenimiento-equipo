@@ -10,7 +10,7 @@
     <h1>Historial de mantenimiento</h1>
     <p>{{ item.nombre }} · {{ item.categoria }}</p>
   </div>
-  <a class="button" href="{{ url_for('maintenance.create_maintenance', equipo=item.id_equipo) }}"><i class="ph ph-plus" aria-hidden="true"></i><span>Registrar mantenimiento</span></a>
+  <a class="button" href="{{ url_for('maintenance.create_maintenance', equipo=item.id_equipo, next=request.path) }}"><i class="ph ph-plus" aria-hidden="true"></i><span>Registrar mantenimiento</span></a>
 </header>
 
 <section class="content-section" aria-labelledby="history-title">
@@ -22,7 +22,7 @@
           <div class="history-marker" aria-hidden="true"><i class="ph {{ 'ph-check' if maintenance_item.estado == 'COMPLETADO' else 'ph-wrench' }}"></i></div>
           <article>
             <div class="history-heading">
-              <div><p class="history-date">{{ maintenance_item.fecha_referencia.strftime('%d/%m/%Y · %H:%M') }}</p><h3><a href="{{ url_for('maintenance.maintenance_detail', maintenance_id=maintenance_item.id_mantenimiento) }}">{{ types[maintenance_item.tipo] }}</a></h3></div>
+              <div><p class="history-date">{{ maintenance_item.fecha_referencia.strftime('%d/%m/%Y · %H:%M') }}</p><h3><a href="{{ url_for('maintenance.maintenance_detail', maintenance_id=maintenance_item.id_mantenimiento, next=request.path) }}">{{ types[maintenance_item.tipo] }}</a></h3></div>
               <span class="status status-{{ maintenance_item.estado|lower }}">{{ statuses[maintenance_item.estado] }}</span>
             </div>
             <p>{{ maintenance_item.descripcion }}</p>
@@ -32,7 +32,7 @@
       {% endfor %}
     </ol>
   {% else %}
-    <div class="empty-state" role="status"><i class="ph ph-clock-counter-clockwise empty-state-icon" aria-hidden="true"></i><h3>Este equipo aún no tiene historial</h3><p>Registra su primer mantenimiento preventivo o correctivo.</p><a class="button" href="{{ url_for('maintenance.create_maintenance', equipo=item.id_equipo) }}">Registrar mantenimiento</a></div>
+    <div class="empty-state" role="status"><i class="ph ph-clock-counter-clockwise empty-state-icon" aria-hidden="true"></i><h3>Este equipo aún no tiene historial</h3><p>Registra su primer mantenimiento preventivo o correctivo.</p><a class="button" href="{{ url_for('maintenance.create_maintenance', equipo=item.id_equipo, next=request.path) }}">Registrar mantenimiento</a></div>
   {% endif %}
 </section>
 {% endblock %}

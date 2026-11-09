@@ -14,25 +14,25 @@
 </header>
 
 <section class="dashboard-kpis dashboard-kpi-row" aria-label="Indicadores principales">
-  <article class="kpi kpi-availability">
+  <a class="kpi kpi-availability" href="{{ url_for('inventory.list_equipment', estado='OPERATIVO') }}" aria-label="Ver equipos operativos">
     <div class="kpi-heading"><span>Disponibilidad</span><i class="ph ph-activity" aria-hidden="true"></i></div>
     <div class="kpi-main">
       <div><strong>{{ summary.disponibilidad_porcentaje }}%</strong><small>{{ summary.equipos_operativos }} de {{ summary.total_equipos_activos }} disponibles</small></div>
       <div class="kpi-ring" style="--progress: {{ summary.disponibilidad_porcentaje }}%" role="img" aria-label="Disponibilidad del {{ summary.disponibilidad_porcentaje }} por ciento"><i class="ph ph-check" aria-hidden="true"></i></div>
     </div>
-  </article>
-  <article class="kpi kpi-outage">
+  </a>
+  <a class="kpi kpi-outage" href="{{ url_for('inventory.list_equipment', estado='FUERA_DE_SERVICIO') }}" aria-label="Ver equipos fuera de servicio">
     <div class="kpi-heading"><span>Fuera de servicio</span><i class="ph ph-warning" aria-hidden="true"></i></div>
     <div class="kpi-main"><div><strong>{{ summary.equipos_fuera_de_servicio }}</strong><small>Equipos activos no disponibles</small></div><span class="kpi-status kpi-status-alert">Requieren atención</span></div>
-  </article>
-  <article class="kpi kpi-correctives">
+  </a>
+  <a class="kpi kpi-correctives" href="{{ url_for('maintenance.list_maintenance', tipo='CORRECTIVO') }}" aria-label="Ver mantenimientos correctivos">
     <div class="kpi-heading"><span>Correctivos del periodo</span><i class="ph ph-wrench" aria-hidden="true"></i></div>
     <div class="kpi-main"><div><strong>{{ period_analysis.total_correctives }}</strong><small>En los últimos 6 meses</small></div><span class="kpi-status">{{ period_analysis.corrective_share|number }}% del total</span></div>
-  </article>
-  <article class="kpi kpi-cost">
+  </a>
+  <a class="kpi kpi-cost" href="{{ url_for('maintenance.list_maintenance', estado='COMPLETADO') }}" aria-label="Ver mantenimientos completados">
     <div class="kpi-heading"><span>Costo del periodo</span><i class="ph ph-currency-dollar" aria-hidden="true"></i></div>
     <div class="kpi-main"><div><strong>${{ '{:,.0f}'.format(period_analysis.total_cost) }}</strong><small>Servicios completados · 6 meses</small></div><span class="kpi-status">{% if period_analysis.cost_change is not none %}{{ '%+.1f'|format(period_analysis.cost_change) }}% trimestral{% else %}Sin comparación{% endif %}</span></div>
-  </article>
+  </a>
 </section>
 
 <section class="decision-summary" aria-labelledby="decision-summary-title">
@@ -67,7 +67,7 @@
     {% if recent_alerts %}
       <ul class="compact-alert-list">
         {% for alert in recent_alerts %}
-          <li><a href="{{ url_for('alerts.alert_detail', alert_id=alert.id_alerta) }}"><span class="compact-alert-icon"><i class="ph ph-warning" aria-hidden="true"></i></span><span><strong>{{ alert.variable }}</strong><small>{{ alert.equipo }}</small><small>{{ alert.valor_medido|number }} {{ alert.unidad }} · {{ alert.generada_en.strftime('%d/%m/%Y %H:%M') }}</small></span><i class="ph ph-caret-right" aria-hidden="true"></i></a></li>
+          <li><a href="{{ url_for('alerts.alert_detail', alert_id=alert.id_alerta, next=request.path) }}"><span class="compact-alert-icon"><i class="ph ph-warning" aria-hidden="true"></i></span><span><strong>{{ alert.variable }}</strong><small>{{ alert.equipo }}</small><small>{{ alert.valor_medido|number }} {{ alert.unidad }} · {{ alert.generada_en.strftime('%d/%m/%Y %H:%M') }}</small></span><i class="ph ph-caret-right" aria-hidden="true"></i></a></li>
         {% endfor %}
       </ul>
     {% else %}

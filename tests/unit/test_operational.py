@@ -224,6 +224,40 @@ class OperationalModuleTests(unittest.TestCase):
             5, "ATENDIDA", "Se revisó el sensor.", 1
         )
 
+    @patch("app.blueprints.auth.users.find_active_user_by_id")
+    @patch("app.blueprints.alerts.alerts.resolve_alert")
+    @patch("app.blueprints.alerts.alerts.find_alert")
+    def test_discarded_alert_requires_observations(
+        self, find_alert, resolve_alert, find_user
+    ):
+        find_user.return_value = self.admin
+        find_alert.return_value = {
+            "id_alerta": 5,
+            "estado": "PENDIENTE",
+            "tipo": "LIMITE_SUPERIOR",
+            "variable": "Temperatura",
+            "equipo": "Bomba",
+            "codigo_interno": "EQ-001",
+            "medido_en": datetime(2026, 10, 4, 10, 30),
+            "valor_medido": Decimal("25"),
+            "unidad": "°C",
+            "valor_minimo": Decimal("10"),
+            "valor_maximo": Decimal("20"),
+        }
+
+        response = self.client.post(
+            "/alertas/5",
+            data={
+                "csrf_token": "valid-token",
+                "estado": "DESCARTADA",
+                "observaciones": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Explica por qu\xc3\xa9 se descarta", response.data)
+        resolve_alert.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

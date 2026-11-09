@@ -3811,6 +3811,8 @@ textarea:focus {
 }
 
 .command-copy {
+  font: inherit;
+  cursor: pointer;
   max-width: 100%;
   margin-top: 1.25rem;
   padding: 0.7rem 0.9rem;
@@ -3819,6 +3821,12 @@ textarea:focus {
   border-radius: 0.65rem;
   color: var(--color-text);
   background: var(--color-surface-subtle);
+}
+
+.button:disabled,
+.text-button:disabled {
+  cursor: wait;
+  opacity: 0.78;
 }
 
 .model-empty .supporting-note {
@@ -3831,6 +3839,10 @@ textarea:focus {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.75rem;
   margin-bottom: 0.75rem;
+}
+
+.risk-summary-technical {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .risk-summary article {
@@ -3885,6 +3897,10 @@ textarea:focus {
   align-items: start;
 }
 
+.risk-layout-technical {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .risk-results,
 .model-card {
   margin: 0;
@@ -3894,11 +3910,20 @@ textarea:focus {
   min-width: 76rem;
 }
 
+.risk-table-technical {
+  min-width: 52rem;
+}
+
+.risk-table-technical th:nth-child(1) { width: 25%; }
+.risk-table-technical th:nth-child(2) { width: 18%; }
+.risk-table-technical th:nth-child(3) { width: 20%; }
+
 .risk-table th:nth-child(1) { width: 18%; }
 .risk-table th:nth-child(2) { width: 14%; }
 .risk-table th:nth-child(3) { width: 14%; }
 .risk-table th:nth-child(4) { width: 14%; }
 .risk-table th:nth-child(5) { width: 12%; }
+.risk-table-technical th:nth-child(4) { width: 37%; }
 
 .priority-level {
   display: inline-flex;
@@ -4438,6 +4463,10 @@ body {
   box-shadow:
     0 1rem 2.5rem rgba(73, 83, 135, 0.08),
     inset 0 1px 0 #ffffff;
+}
+
+.dashboard-kpi-row a.kpi {
+  text-decoration: none;
 }
 
 .dashboard-kpi-row .kpi-availability {

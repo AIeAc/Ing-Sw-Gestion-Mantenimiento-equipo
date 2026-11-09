@@ -91,3 +91,24 @@ def resolve_alert(alert_id, status, observations, user_id):
         updated = cursor.fetchone() is not None
     connection.commit()
     return updated
+
+
+def find_next_pending_alert(excluded_alert_id=None):
+    parameters = []
+    exclusion = ""
+    if excluded_alert_id is not None:
+        exclusion = "AND id_alerta <> %s"
+        parameters.append(excluded_alert_id)
+
+    with get_db().cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT id_alerta
+            FROM alertas_rango
+            WHERE estado = 'PENDIENTE' {exclusion}
+            ORDER BY generada_en DESC, id_alerta DESC
+            LIMIT 1
+            """,
+            parameters,
+        )
+        return cursor.fetchone()

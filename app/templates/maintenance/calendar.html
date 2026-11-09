@@ -24,7 +24,7 @@
               <span class="day-number">{{ day }}</span>
               <div class="day-events">
                 {% for entry in entries_by_day.get(day, []) %}
-                  <a class="calendar-event event-{{ entry.tipo|lower }}" href="{{ url_for('maintenance.maintenance_detail', maintenance_id=entry.id_mantenimiento) }}">
+                  <a class="calendar-event event-{{ entry.tipo|lower }}" href="{{ url_for('maintenance.maintenance_detail', maintenance_id=entry.id_mantenimiento, next=request.full_path.rstrip('?')) }}">
                     <time datetime="{{ entry.fecha_programada.isoformat() }}">{{ entry.fecha_programada.strftime('%H:%M') }}</time>
                     <strong>{{ entry.equipo }}</strong>
                     <span>{{ 'Preventivo' if entry.tipo == 'PREVENTIVO' else 'Correctivo' }} · {{ statuses[entry.estado] }}</span>

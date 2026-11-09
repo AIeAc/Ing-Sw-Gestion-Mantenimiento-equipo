@@ -9,7 +9,7 @@
     <p class="error-code">Error {{ status_code }}</p>
     <h1>{{ title }}</h1>
     <p>{{ message }}</p>
-    <a class="button" href="{{ url_for('inventory.list_equipment') if g.user else url_for('auth.login') }}">Volver</a>
+    <a class="button" href="{{ url_for('inventory.list_equipment') if g.user else url_for('auth.login') }}" data-back-with-fallback>Volver a la página anterior</a>
   </div>
 </main>
 {% endblock %}

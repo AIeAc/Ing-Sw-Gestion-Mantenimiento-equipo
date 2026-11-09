@@ -36,7 +36,7 @@
       <a href="{{ url_for('variables.list_variables') }}" {% if request.blueprint == 'variables' %}aria-current="page"{% endif %}>
         <i class="ph ph-gauge nav-icon" aria-hidden="true"></i><span>Variables</span>
       </a>
-      {% if g.user.rol == 'Administrador' %}
+      {% if g.user.rol in ('Administrador', 'DIOS') %}
         <a href="{{ url_for('classifications.list_categories') }}" {% if request.blueprint == 'classifications' %}aria-current="page"{% endif %}>
           <i class="ph ph-tag nav-icon" aria-hidden="true"></i><span>Clasificaciones</span>
         </a>

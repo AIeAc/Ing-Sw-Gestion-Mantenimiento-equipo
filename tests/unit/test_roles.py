@@ -64,6 +64,41 @@ class RoleTests(unittest.TestCase):
         self.assertIn(b"Usuarios y roles", response.data)
 
     @patch("app.blueprints.auth.users.find_active_user_by_id")
+    @patch("app.blueprints.admin.users.list_users", return_value=[])
+    def test_god_can_manage_users_and_see_admin_navigation(self, _list_users, find_user):
+        find_user.return_value = self.user("DIOS")
+        response = self.client.get("/usuarios")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Clasificaciones", response.data)
+        self.assertIn(b"Usuarios y roles", response.data)
+
+    @patch("app.blueprints.auth.users.find_active_user_by_id")
+    @patch("app.blueprints.classifications.categories.list_categories", return_value=[])
+    def test_god_can_open_categories(self, _list_categories, find_user):
+        find_user.return_value = self.user("DIOS")
+        response = self.client.get("/clasificaciones")
+        self.assertEqual(response.status_code, 200)
+
+    @patch("app.blueprints.auth.users.find_active_user_by_id")
+    @patch("app.blueprints.variables.variables.list_variables", return_value=[])
+    def test_god_sees_variable_creation(self, _list_variables, find_user):
+        find_user.return_value = self.user("DIOS")
+        response = self.client.get("/variables")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Nueva variable", response.data)
+        self.assertEqual(self.client.get("/variables/nueva").status_code, 200)
+
+    @patch("app.blueprints.auth.users.find_active_user_by_id")
+    @patch("app.blueprints.inventory.categories.list_categories", return_value=[])
+    def test_god_can_reach_category_creation_when_inventory_is_empty(
+        self, _list_categories, find_user
+    ):
+        find_user.return_value = self.user("DIOS")
+        response = self.client.get("/equipos/nuevo")
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.location.endswith("/clasificaciones/nueva"))
+
+    @patch("app.blueprints.auth.users.find_active_user_by_id")
     @patch("app.blueprints.admin.users.list_active_roles")
     @patch("app.blueprints.admin.users.role_exists", return_value=True)
     @patch("app.blueprints.admin.users.find_user_by_id")

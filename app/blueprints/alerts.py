@@ -1,6 +1,7 @@
 from flask import Blueprint, abort, flash, g, redirect, render_template, request, url_for
 
 from app.core.validation import is_safe_free_text
+from app.core.navigation import safe_local_url
 from app.repositories import alerts
 
 from .auth import login_required, validate_csrf
@@ -43,6 +44,9 @@ def alert_detail(alert_id):
     if item is None:
         abort(404)
     errors = {}
+    return_to = safe_local_url(
+        request.args.get("next"), url_for("alerts.list_alerts", estado="PENDIENTE")
+    )
     data = {
         "estado": request.form.get("estado", "ATENDIDA").strip(),
         "observaciones": request.form.get("observaciones", "").strip(),
@@ -62,6 +66,8 @@ def alert_detail(alert_id):
             errors["observaciones"] = (
                 "Las observaciones contienen caracteres no permitidos."
             )
+        elif data["estado"] == "DESCARTADA" and not data["observaciones"]:
+            errors["observaciones"] = "Explica por qué se descarta la alerta."
         if not errors:
             updated = alerts.resolve_alert(
                 alert_id,
@@ -70,10 +76,23 @@ def alert_detail(alert_id):
                 g.user["id_usuario"],
             )
             if updated:
-                flash("Alerta actualizada correctamente.", "success")
+                message = (
+                    "La alerta se marcó como atendida."
+                    if data["estado"] == "ATENDIDA"
+                    else "La alerta se descartó."
+                )
+                flash(message, "success")
             else:
                 flash("La alerta ya no estaba pendiente.", "warning")
-            return redirect(url_for("alerts.alert_detail", alert_id=alert_id))
+            return redirect(
+                url_for("alerts.alert_detail", alert_id=alert_id, next=return_to)
+            )
+
+    next_pending = (
+        alerts.find_next_pending_alert(alert_id)
+        if item["estado"] != "PENDIENTE"
+        else None
+    )
 
     return render_template(
         "alerts/detail.html",
@@ -82,6 +101,8 @@ def alert_detail(alert_id):
         errors=errors,
         statuses=dict(ALERT_STATUSES),
         types=dict(ALERT_TYPES),
+        return_to=return_to,
+        next_pending=next_pending,
     )
 
 

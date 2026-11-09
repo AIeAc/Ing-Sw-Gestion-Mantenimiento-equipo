@@ -5,7 +5,7 @@
 {% block content %}
 <header class="page-header compact-header"><div><a class="back-link" href="{{ url_for('variables.list_variables') }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver al catálogo</span></a><h1>{{ 'Nueva variable operativa' if creating else 'Editar variable operativa' }}</h1><p>Configura la unidad y el intervalo que se considera normal.</p></div></header>
 {% if errors %}<div class="error-summary" role="alert"><h2>Revisa la información</h2><p>Hay campos que requieren atención antes de guardar.</p></div>{% endif %}
-<form class="record-form" method="post">
+<form class="record-form" method="post" data-guard-unsaved>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <section class="form-section" aria-labelledby="variable-identification"><div class="form-section-heading"><h2 id="variable-identification">Identificación</h2><p>Usa un código breve y único para archivos de importación.</p></div><div class="form-grid">
     <div class="field"><label for="codigo">Código <span>(obligatorio)</span></label><input id="codigo" name="codigo" value="{{ data.codigo }}" maxlength="50" required pattern="[A-Za-z0-9][A-Za-z0-9._\/\-]*" title="Usa letras, números, puntos, guiones, diagonales o guion bajo; sin espacios." placeholder="Ej. TEMP" {% if errors.codigo %}aria-invalid="true" aria-describedby="codigo-error"{% endif %}>{% if errors.codigo %}<p class="field-error" id="codigo-error">{{ errors.codigo }}</p>{% endif %}</div>

@@ -83,6 +83,40 @@ class AuthenticationTests(unittest.TestCase):
             self.assertEqual(session["user_id"], 7)
             self.assertIn("csrf_token", session)
 
+    @patch("app.blueprints.auth.users.register_last_access")
+    @patch("app.blueprints.auth.users.find_active_user_by_email")
+    def test_login_returns_to_requested_internal_page(
+        self, find_by_email, _register_access
+    ):
+        find_by_email.return_value = self.user
+        token = self.csrf_token("/iniciar-sesion?next=/alertas/5?estado=PENDIENTE")
+        response = self.client.post(
+            "/iniciar-sesion?next=/alertas/5?estado=PENDIENTE",
+            data={
+                "correo": "ana@example.com",
+                "contrasena": "correcta-segura",
+                "csrf_token": token,
+            },
+        )
+
+        self.assertEqual(response.headers["Location"], "/alertas/5?estado=PENDIENTE")
+
+    @patch("app.blueprints.auth.users.register_last_access")
+    @patch("app.blueprints.auth.users.find_active_user_by_email")
+    def test_login_rejects_external_return_url(self, find_by_email, _register_access):
+        find_by_email.return_value = self.user
+        token = self.csrf_token("/iniciar-sesion?next=https://example.com")
+        response = self.client.post(
+            "/iniciar-sesion?next=https://example.com",
+            data={
+                "correo": "ana@example.com",
+                "contrasena": "correcta-segura",
+                "csrf_token": token,
+            },
+        )
+
+        self.assertEqual(response.headers["Location"], "/equipos")
+
     @patch("app.blueprints.auth.users.find_active_user_by_id")
     def test_logout_clears_session(self, find_by_id):
         find_by_id.return_value = self.user

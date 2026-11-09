@@ -14,17 +14,28 @@ def list_equipment_options():
         return cursor.fetchall()
 
 
-def list_variable_options(active_only=False):
-    active_filter = "WHERE activo = TRUE" if active_only else ""
+def list_variable_options(active_only=False, equipment_id=None):
+    filters = []
+    parameters = []
+    if active_only:
+        filters.append("v.activo = TRUE")
+    if equipment_id is not None:
+        filters.append(
+            "EXISTS (SELECT 1 FROM mediciones_operativas AS m "
+            "WHERE m.id_variable = v.id_variable AND m.id_equipo = %s)"
+        )
+        parameters.append(equipment_id)
+    where_clause = f"WHERE {' AND '.join(filters)}" if filters else ""
     with get_db().cursor() as cursor:
         cursor.execute(
             f"""
-            SELECT id_variable, codigo, nombre, unidad,
-                   valor_minimo, valor_maximo, activo
-            FROM variables_operativas
-            {active_filter}
-            ORDER BY nombre, codigo
-            """
+            SELECT v.id_variable, v.codigo, v.nombre, v.unidad,
+                   v.valor_minimo, v.valor_maximo, v.activo
+            FROM variables_operativas AS v
+            {where_clause}
+            ORDER BY v.nombre, v.codigo
+            """,
+            parameters,
         )
         return cursor.fetchall()
 

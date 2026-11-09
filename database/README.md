@@ -4,7 +4,7 @@ La base de datos utiliza PostgreSQL. Conserva el alcance entregado en el
 Sprint 1:
 
 - inicio de sesión;
-- roles de Administrador y Técnico;
+- roles de Administrador, Técnico y DIOS (acceso completo a las funciones actuales);
 - clasificación básica de equipos;
 - registro, consulta y modificación de equipos;
 - búsqueda básica del inventario.
@@ -45,6 +45,8 @@ texto libre, categoría y estado; no implementa criterios avanzados.
   calendario y la asignación del rol Técnico; revierte sus datos de prueba.
 - `migrations/003_sprint_3_variables_alertas.sql`: agrega variables, lotes,
   mediciones, alertas y vistas de indicadores a una base del Sprint 2.
+- `migrations/004_rol_dios.sql`: agrega el rol DIOS a una base existente sin
+  modificar usuarios ni datos anteriores. Se puede ejecutar más de una vez.
 - `tests/sprint3_database.sql`: valida rangos, mediciones, alertas y vistas;
   revierte todos sus datos de prueba.
 
@@ -77,6 +79,13 @@ Para actualizar del Sprint 2 al Sprint 3:
 ```bash
 psql -v ON_ERROR_STOP=1 -d mantenimiento_predictivo \
   -f database/migrations/003_sprint_3_variables_alertas.sql
+```
+
+Para agregar el rol DIOS a una base ya instalada:
+
+```bash
+psql -v ON_ERROR_STOP=1 -d mantenimiento_predictivo \
+  -f database/migrations/004_rol_dios.sql
 ```
 
 Para comprobar el Sprint 3 sin conservar registros ficticios:

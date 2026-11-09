@@ -58,10 +58,160 @@ for (const toggle of document.querySelectorAll("[data-password-toggle]")) {
   });
 }
 
+const errorTarget = document.querySelector('[aria-invalid="true"]') || document.querySelector(".error-summary");
+if (errorTarget) {
+  if (!errorTarget.hasAttribute("tabindex")) errorTarget.setAttribute("tabindex", "-1");
+  errorTarget.focus({ preventScroll: false });
+}
+
+function formSnapshot(form) {
+  return [...new FormData(form).entries()]
+    .filter(([name]) => name !== "csrf_token")
+    .map(([name, value]) => [name, value instanceof File ? `${value.name}:${value.size}` : String(value)])
+    .sort(([nameA], [nameB]) => nameA.localeCompare(nameB))
+    .map(([name, value]) => `${name}=${value}`)
+    .join("&");
+}
+
+const guardedForms = [...document.querySelectorAll("form[data-guard-unsaved]")];
+const initialSnapshots = new WeakMap(guardedForms.map((form) => [form, formSnapshot(form)]));
+const dirtyForms = new Set();
+
+for (const form of guardedForms) {
+  const updateDirtyState = () => {
+    if (formSnapshot(form) === initialSnapshots.get(form)) dirtyForms.delete(form);
+    else dirtyForms.add(form);
+  };
+  form.addEventListener("input", updateDirtyState);
+  form.addEventListener("change", updateDirtyState);
+  form.addEventListener("submit", () => dirtyForms.delete(form));
+}
+
+window.addEventListener("beforeunload", (event) => {
+  if (!dirtyForms.size) return;
+  event.preventDefault();
+  event.returnValue = "";
+});
+
+function loadingLabel(button) {
+  if (button.dataset.loadingLabel) return button.dataset.loadingLabel;
+  const text = button.textContent.trim();
+  if (/mantenimiento/i.test(text)) return "Registrando mantenimiento…";
+  if (/equipo/i.test(text)) return "Guardando equipo…";
+  if (/resolución|atendida|descartar/i.test(text)) return "Guardando resolución…";
+  if (/usuario/i.test(text)) return "Guardando usuario…";
+  if (/variable/i.test(text)) return "Guardando variable…";
+  if (/categoría/i.test(text)) return "Guardando categoría…";
+  if (/ingresar/i.test(text)) return "Ingresando…";
+  return "Guardando…";
+}
+
+for (const form of document.querySelectorAll('form[method="post" i]')) {
+  form.addEventListener("submit", (event) => {
+    if (event.defaultPrevented || !form.checkValidity()) return;
+    const button = form.querySelector('button[type="submit"]');
+    if (!button || button.disabled) return;
+    const label = button.querySelector("span") || button;
+    label.textContent = loadingLabel(button);
+    button.disabled = true;
+    button.setAttribute("aria-disabled", "true");
+    form.setAttribute("aria-busy", "true");
+  });
+}
+
+const uploadForm = document.querySelector("[data-upload-form]");
+const uploadInput = uploadForm?.querySelector('input[type="file"]');
+const uploadError = uploadForm?.querySelector("[data-file-error]");
+
+function validateUpload() {
+  if (!uploadInput || !uploadError) return true;
+  const file = uploadInput.files?.[0];
+  let message = "";
+  if (file && !file.name.toLowerCase().endsWith(".csv")) message = "Selecciona un archivo con extensión .csv.";
+  else if (file && file.size > Number(uploadInput.dataset.maxBytes || 0)) message = "El archivo excede el límite de 2 MB.";
+  uploadInput.setCustomValidity(message);
+  uploadError.textContent = message;
+  uploadError.hidden = !message;
+  return !message;
+}
+
+uploadInput?.addEventListener("change", validateUpload);
+uploadForm?.addEventListener("submit", (event) => {
+  if (!validateUpload()) {
+    event.preventDefault();
+    uploadInput.focus();
+  }
+});
+
+const measurementFilters = document.querySelector("[data-measurement-filters]");
+const measurementEquipment = measurementFilters?.querySelector("[data-measurement-equipment]");
+const measurementVariable = measurementFilters?.querySelector("[data-measurement-variable]");
+const measurementStart = measurementFilters?.querySelector("#desde");
+const measurementEnd = measurementFilters?.querySelector("#hasta");
+
+function validateMeasurementDates() {
+  if (!measurementStart || !measurementEnd) return;
+  const invalid = measurementStart.value && measurementEnd.value && measurementStart.value > measurementEnd.value;
+  measurementEnd.setCustomValidity(invalid ? "La fecha final debe ser igual o posterior a la inicial." : "");
+}
+
+measurementEquipment?.addEventListener("change", () => {
+  if (measurementVariable) measurementVariable.value = "";
+  measurementFilters.requestSubmit();
+});
+measurementVariable?.addEventListener("change", () => {
+  if (measurementEquipment?.value && measurementVariable.value) measurementFilters.requestSubmit();
+});
+measurementStart?.addEventListener("change", validateMeasurementDates);
+measurementEnd?.addEventListener("change", validateMeasurementDates);
+measurementFilters?.addEventListener("submit", validateMeasurementDates);
+
+const resolutionStatus = document.querySelector("[data-resolution-status]");
+const resolutionObservations = document.querySelector("[data-resolution-observations]");
+const resolutionRequirement = document.querySelector("[data-resolution-requirement]");
+const resolutionSubmit = document.querySelector("[data-resolution-submit] span");
+
+function updateResolutionRequirements() {
+  if (!resolutionStatus || !resolutionObservations) return;
+  const discarded = resolutionStatus.value === "DESCARTADA";
+  resolutionObservations.required = discarded;
+  if (resolutionRequirement) resolutionRequirement.textContent = discarded ? "(obligatorias)" : "(opcional)";
+  if (resolutionSubmit) resolutionSubmit.textContent = discarded ? "Descartar alerta" : "Marcar como atendida";
+}
+
+resolutionStatus?.addEventListener("change", updateResolutionRequirements);
+updateResolutionRequirements();
+
+for (const copyButton of document.querySelectorAll("[data-copy-text]")) {
+  copyButton.addEventListener("click", async () => {
+    const value = copyButton.dataset.copyText || "";
+    const status = document.querySelector("[data-copy-status]");
+    try {
+      await navigator.clipboard.writeText(value);
+      if (status) status.textContent = "Comando copiado.";
+    } catch {
+      if (status) status.textContent = "Selecciona y copia el comando manualmente.";
+    }
+  });
+}
+
+for (const backLink of document.querySelectorAll("[data-back-with-fallback]")) {
+  backLink.addEventListener("click", (event) => {
+    if (!document.referrer) return;
+    const referrer = new URL(document.referrer);
+    if (referrer.origin !== window.location.origin) return;
+    event.preventDefault();
+    history.back();
+  });
+}
+
 const maintenanceStatus = document.querySelector("[data-maintenance-status]");
 const scheduledAt = document.getElementById("fecha_programada");
 const startedAt = document.getElementById("fecha_inicio");
 const finishedAt = document.getElementById("fecha_fin");
+const scheduledRequirement = document.querySelector("[data-scheduled-requirement]");
+const startedRequirement = document.querySelector("[data-started-requirement]");
+const finishedRequirement = document.querySelector("[data-finished-requirement]");
 
 function updateMaintenanceRequirements() {
   if (!maintenanceStatus || !scheduledAt || !startedAt || !finishedAt) return;
@@ -69,6 +219,9 @@ function updateMaintenanceRequirements() {
   scheduledAt.required = status === "PROGRAMADO";
   startedAt.required = status === "EN_PROCESO" || status === "COMPLETADO";
   finishedAt.required = status === "COMPLETADO";
+  if (scheduledRequirement) scheduledRequirement.textContent = scheduledAt.required ? "(obligatoria)" : "(opcional)";
+  if (startedRequirement) startedRequirement.textContent = startedAt.required ? "(obligatoria)" : "(opcional)";
+  if (finishedRequirement) finishedRequirement.textContent = finishedAt.required ? "(obligatoria)" : "(opcional)";
 }
 
 maintenanceStatus?.addEventListener("change", updateMaintenanceRequirements);

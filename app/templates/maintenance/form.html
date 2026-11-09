@@ -6,7 +6,7 @@
 {% block content %}
 <header class="page-header compact-header">
   <div>
-    <a class="back-link" href="{{ url_for('maintenance.list_maintenance') }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver a mantenimientos</span></a>
+    <a class="back-link" href="{{ return_to }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver a mantenimientos</span></a>
     <h1>{{ 'Registrar mantenimiento' if creating else 'Editar mantenimiento' }}</h1>
     <p>{{ 'Programa o documenta un servicio preventivo o correctivo.' if creating else 'Actualiza el seguimiento y los datos del servicio.' }}</p>
   </div>
@@ -14,7 +14,7 @@
 
 {% if errors %}<div class="error-summary" role="alert" tabindex="-1"><h2>Revisa la información</h2><p>Hay campos que requieren atención antes de guardar.</p></div>{% endif %}
 
-<form class="record-form" method="post">
+<form class="record-form" method="post" data-guard-unsaved>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
   <section class="form-section" aria-labelledby="association-title">
@@ -58,12 +58,12 @@
         {% if errors.fecha_programada %}<p class="field-error" id="programada-error">{{ errors.fecha_programada }}</p>{% endif %}
       </div>
       <div class="field">
-        <label for="fecha_inicio">Fecha de inicio</label>
+        <label for="fecha_inicio">Fecha de inicio <span data-started-requirement>(opcional)</span></label>
         <input id="fecha_inicio" name="fecha_inicio" type="datetime-local" value="{{ data.fecha_inicio }}" {% if errors.fecha_inicio %}aria-invalid="true" aria-describedby="inicio-error"{% endif %}>
         {% if errors.fecha_inicio %}<p class="field-error" id="inicio-error">{{ errors.fecha_inicio }}</p>{% endif %}
       </div>
       <div class="field">
-        <label for="fecha_fin">Fecha de finalización</label>
+        <label for="fecha_fin">Fecha de finalización <span data-finished-requirement>(opcional)</span></label>
         <input id="fecha_fin" name="fecha_fin" type="datetime-local" value="{{ data.fecha_fin }}" {% if errors.fecha_fin %}aria-invalid="true" aria-describedby="fin-error"{% endif %}>
         {% if errors.fecha_fin %}<p class="field-error" id="fin-error">{{ errors.fecha_fin }}</p>{% endif %}
       </div>
@@ -89,7 +89,7 @@
 
   <div class="form-actions">
     <button class="button" type="submit"><i class="ph ph-check" aria-hidden="true"></i><span>{{ 'Registrar mantenimiento' if creating else 'Guardar cambios' }}</span></button>
-    <a class="button button-secondary" href="{{ url_for('maintenance.maintenance_detail', maintenance_id=item.id_mantenimiento) if not creating else url_for('maintenance.list_maintenance') }}">Cancelar</a>
+    <a class="button button-secondary" href="{{ return_to }}">Cancelar</a>
   </div>
 </form>
 {% endblock %}

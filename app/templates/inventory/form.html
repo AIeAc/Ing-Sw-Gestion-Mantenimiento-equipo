@@ -6,7 +6,7 @@
 {% block content %}
 <header class="page-header compact-header">
   <div>
-    <a class="back-link" href="{{ url_for('inventory.list_equipment') }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver al inventario</span></a>
+    <a class="back-link" href="{{ return_to if not creating else url_for('inventory.list_equipment') }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver al inventario</span></a>
     <h1>{{ 'Registrar equipo' if creating else 'Editar equipo' }}</h1>
     <p>{{ 'Agrega la información básica del activo.' if creating else 'Actualiza los datos del activo seleccionado.' }}</p>
   </div>
@@ -19,7 +19,7 @@
   </div>
 {% endif %}
 
-<form class="record-form" method="post">
+<form class="record-form" method="post" data-guard-unsaved>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
   <section class="form-section" aria-labelledby="identification-title">
@@ -110,7 +110,7 @@
 
   <div class="form-actions">
     <button class="button" type="submit"><i class="ph ph-check" aria-hidden="true"></i><span>{{ 'Registrar equipo' if creating else 'Guardar cambios' }}</span></button>
-    <a class="button button-secondary" href="{{ url_for('inventory.equipment_detail', equipment_id=item.id_equipo) if not creating else url_for('inventory.list_equipment') }}">Cancelar</a>
+    <a class="button button-secondary" href="{{ return_to if not creating else url_for('inventory.list_equipment') }}">Cancelar</a>
   </div>
 </form>
 {% endblock %}

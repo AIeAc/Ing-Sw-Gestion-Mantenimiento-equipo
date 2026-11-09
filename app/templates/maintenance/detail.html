@@ -5,12 +5,12 @@
 {% block content %}
 <header class="page-header">
   <div>
-    <a class="back-link" href="{{ url_for('maintenance.list_maintenance') }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver a mantenimientos</span></a>
+    <a class="back-link" href="{{ return_to }}"><i class="ph ph-caret-left" aria-hidden="true"></i><span>Volver a mantenimientos</span></a>
     <p class="eyebrow">{{ types[item.tipo] }} · {{ item.codigo_interno }}</p>
     <h1>{{ item.equipo }}</h1>
     <p>{{ item.descripcion }}</p>
   </div>
-  <a class="button" href="{{ url_for('maintenance.edit_maintenance', maintenance_id=item.id_mantenimiento) }}"><i class="ph ph-pencil-simple" aria-hidden="true"></i><span>Editar mantenimiento</span></a>
+  <a class="button" href="{{ url_for('maintenance.edit_maintenance', maintenance_id=item.id_mantenimiento, next=return_to) }}"><i class="ph ph-pencil-simple" aria-hidden="true"></i><span>Editar mantenimiento</span></a>
 </header>
 
 <section class="detail-panel" aria-labelledby="maintenance-title">

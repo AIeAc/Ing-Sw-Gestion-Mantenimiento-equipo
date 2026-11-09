@@ -5,7 +5,7 @@ La aplicación conserva los Sprints 1, 2 y 3 e incorpora el módulo funcional de
 de falla por equipo.
 
 - inicio y cierre de sesión;
-- roles de Administrador y Técnico;
+- roles de Administrador, Técnico y DIOS (acceso completo a las funciones actuales);
 - registro, consulta y modificación de equipos;
 - clasificación y búsqueda básica del inventario.
 - registro y actualización de mantenimientos preventivos y correctivos;

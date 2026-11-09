@@ -13,6 +13,7 @@ from flask import (
 from psycopg.errors import ForeignKeyViolation, UniqueViolation
 
 from app.core.database import get_db
+from app.core.navigation import safe_local_url
 from app.core.validation import (
     is_identifier,
     is_label,
@@ -164,7 +165,7 @@ def create_equipment():
         )
         destination = (
             "classifications.create_category"
-            if g.user["rol"] == "Administrador"
+            if g.user["rol"] in ("Administrador", "DIOS")
             else "inventory.list_equipment"
         )
         return redirect(url_for(destination))
@@ -209,7 +210,13 @@ def equipment_detail(equipment_id):
     item = equipment.find_equipment(equipment_id)
     if item is None:
         abort(404)
-    return render_template("inventory/detail.html", item=item)
+    return render_template(
+        "inventory/detail.html",
+        item=item,
+        return_to=safe_local_url(
+            request.args.get("next"), url_for("inventory.list_equipment")
+        ),
+    )
 
 
 @bp.route("/<int:equipment_id>/editar", methods=("GET", "POST"))
@@ -220,6 +227,10 @@ def edit_equipment(equipment_id):
         abort(404)
 
     category_items = categories.list_categories(active_only=True)
+    return_to = safe_local_url(
+        request.args.get("next"),
+        url_for("inventory.equipment_detail", equipment_id=equipment_id),
+    )
     data = _form_data(request.form if request.method == "POST" else item)
     errors = {}
     if request.method == "POST":
@@ -237,9 +248,13 @@ def edit_equipment(equipment_id):
                 get_db().rollback()
                 errors["id_categoria"] = "La categoría seleccionada ya no está disponible."
             else:
-                flash("Cambios guardados correctamente.", "success")
+                flash("Los cambios del equipo se guardaron.", "success")
                 return redirect(
-                    url_for("inventory.equipment_detail", equipment_id=equipment_id)
+                    url_for(
+                        "inventory.equipment_detail",
+                        equipment_id=equipment_id,
+                        next=return_to,
+                    )
                 )
 
     return render_template(
@@ -250,6 +265,7 @@ def edit_equipment(equipment_id):
         statuses=EQUIPMENT_STATUSES,
         mode="edit",
         item=item,
+        return_to=return_to,
     )
 
 

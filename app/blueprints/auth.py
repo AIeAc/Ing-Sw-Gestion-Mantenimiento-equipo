@@ -15,6 +15,7 @@ from flask import (
 )
 from werkzeug.security import check_password_hash
 
+from app.core.navigation import safe_local_url
 from app.core.validation import is_email
 from app.repositories import users
 
@@ -61,7 +62,7 @@ def roles_required(*allowed_roles):
         @wraps(view)
         @login_required
         def wrapped_view(**kwargs):
-            if g.user["rol"] not in allowed_roles:
+            if g.user["rol"] != "DIOS" and g.user["rol"] not in allowed_roles:
                 abort(403)
             return view(**kwargs)
 
@@ -105,7 +106,11 @@ def login():
             session.clear()
             session["user_id"] = user["id_usuario"]
             session["csrf_token"] = secrets.token_urlsafe(32)
-            return redirect(url_for("inventory.list_equipment"))
+            return redirect(
+                safe_local_url(
+                    request.args.get("next"), url_for("inventory.list_equipment")
+                )
+            )
 
     return render_template("auth/login.html")
 
