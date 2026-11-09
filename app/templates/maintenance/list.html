@@ -12,11 +12,12 @@
   <a class="button" href="{{ url_for('maintenance.create_maintenance') }}"><i class="ph ph-plus" aria-hidden="true"></i><span>Registrar mantenimiento</span></a>
 </header>
 
-<section class="inventory-summary" aria-label="Resumen de mantenimientos visibles">
+<section class="inventory-summary maintenance-summary" aria-label="Resumen de mantenimientos visibles">
   <div><span>Registros visibles</span><strong>{{ maintenance_items|length }}</strong></div>
-  <div><span>Programados</span><strong>{{ maintenance_items|selectattr('estado', 'equalto', 'PROGRAMADO')|list|length }}</strong></div>
-  <div><span>En proceso</span><strong>{{ maintenance_items|selectattr('estado', 'equalto', 'EN_PROCESO')|list|length }}</strong></div>
-  <div><span>Completados</span><strong>{{ maintenance_items|selectattr('estado', 'equalto', 'COMPLETADO')|list|length }}</strong></div>
+  <div class="maintenance-summary-programado"><span>Programados</span><strong>{{ maintenance_items|selectattr('estado', 'equalto', 'PROGRAMADO')|list|length }}</strong></div>
+  <div class="maintenance-summary-en-proceso"><span>En proceso</span><strong>{{ maintenance_items|selectattr('estado', 'equalto', 'EN_PROCESO')|list|length }}</strong></div>
+  <div class="maintenance-summary-completado"><span>Completados</span><strong>{{ maintenance_items|selectattr('estado', 'equalto', 'COMPLETADO')|list|length }}</strong></div>
+  <div class="maintenance-summary-cancelado"><span>Cancelados</span><strong>{{ maintenance_items|selectattr('estado', 'equalto', 'CANCELADO')|list|length }}</strong></div>
 </section>
 
 <section class="filter-panel" aria-labelledby="filters-title">

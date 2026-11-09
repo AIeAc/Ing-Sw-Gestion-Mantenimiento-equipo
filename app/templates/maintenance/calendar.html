@@ -14,6 +14,12 @@
     <div><p class="eyebrow">Mes seleccionado</p><h2 id="calendar-title">{{ month_label|capitalize }}</h2></div>
     <a class="icon-button" href="{{ url_for('maintenance.maintenance_calendar', mes=next_month) }}" aria-label="Ver mes siguiente"><i class="ph ph-caret-right" aria-hidden="true"></i></a>
   </div>
+  <div class="calendar-status-legend" aria-label="Colores de los estados de mantenimiento">
+    <span class="calendar-status-legend-title">Estados</span>
+    {% for value, label in statuses.items() %}
+      <span class="status status-{{ value|lower }}">{{ label }}</span>
+    {% endfor %}
+  </div>
   <div class="calendar-scroll" tabindex="0" aria-label="Calendario mensual, desplázate horizontalmente si es necesario">
     <div class="month-calendar" role="grid" aria-labelledby="calendar-title">
       {% for weekday in ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] %}<div class="calendar-weekday" role="columnheader">{{ weekday }}</div>{% endfor %}
@@ -24,10 +30,11 @@
               <span class="day-number">{{ day }}</span>
               <div class="day-events">
                 {% for entry in entries_by_day.get(day, []) %}
-                  <a class="calendar-event event-{{ entry.tipo|lower }}" href="{{ url_for('maintenance.maintenance_detail', maintenance_id=entry.id_mantenimiento, next=request.full_path.rstrip('?')) }}">
+                  <a class="calendar-event event-{{ entry.tipo|lower }} event-status-{{ entry.estado|lower }}" href="{{ url_for('maintenance.maintenance_detail', maintenance_id=entry.id_mantenimiento, next=request.full_path.rstrip('?')) }}">
                     <time datetime="{{ entry.fecha_programada.isoformat() }}">{{ entry.fecha_programada.strftime('%H:%M') }}</time>
                     <strong>{{ entry.equipo }}</strong>
-                    <span>{{ 'Preventivo' if entry.tipo == 'PREVENTIVO' else 'Correctivo' }} · {{ statuses[entry.estado] }}</span>
+                    <span class="calendar-event-kind">{{ 'Preventivo' if entry.tipo == 'PREVENTIVO' else 'Correctivo' }}</span>
+                    <span class="calendar-event-state status status-{{ entry.estado|lower }}">{{ statuses[entry.estado] }}</span>
                   </a>
                 {% endfor %}
               </div>

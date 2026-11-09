@@ -19,7 +19,7 @@
     <ol class="history-list">
       {% for maintenance_item in maintenance_items %}
         <li>
-          <div class="history-marker" aria-hidden="true"><i class="ph {{ 'ph-check' if maintenance_item.estado == 'COMPLETADO' else 'ph-wrench' }}"></i></div>
+          <div class="history-marker history-marker-{{ maintenance_item.estado|lower }}" aria-hidden="true"><i class="ph {{ 'ph-check' if maintenance_item.estado == 'COMPLETADO' else 'ph-wrench' }}"></i></div>
           <article>
             <div class="history-heading">
               <div><p class="history-date">{{ maintenance_item.fecha_referencia.strftime('%d/%m/%Y · %H:%M') }}</p><h3><a href="{{ url_for('maintenance.maintenance_detail', maintenance_id=maintenance_item.id_mantenimiento, next=request.path) }}">{{ types[maintenance_item.tipo] }}</a></h3></div>

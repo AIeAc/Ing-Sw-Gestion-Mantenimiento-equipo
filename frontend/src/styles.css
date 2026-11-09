@@ -991,6 +991,38 @@ textarea:focus {
   line-height: 1;
 }
 
+.maintenance-summary {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.maintenance-summary > div[class^="maintenance-summary-"] {
+  border-top: 0.2rem solid currentColor;
+}
+
+.maintenance-summary-programado {
+  color: #315da8;
+  background: #f1f5ff;
+}
+
+.maintenance-summary-en-proceso {
+  color: #80600f;
+  background: #fff8df;
+}
+
+.maintenance-summary-completado {
+  color: #17694c;
+  background: #eaf8f1;
+}
+
+.maintenance-summary-cancelado {
+  color: #963d32;
+  background: #fdf0ed;
+}
+
+.maintenance-summary > div[class^="maintenance-summary-"] span {
+  color: currentColor;
+}
+
 .filter-panel {
   margin-bottom: 1rem;
   padding: 1.15rem;
@@ -1135,12 +1167,24 @@ a.table-primary:hover {
 }
 
 .status {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid transparent;
   border-radius: 0.35rem;
   font-size: 0.74rem;
   font-weight: 760;
   white-space: nowrap;
+}
+
+.status::before {
+  width: 0.45rem;
+  height: 0.45rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
 }
 
 .status-operativo,
@@ -1161,23 +1205,27 @@ a.table-primary:hover {
 }
 
 .status-programado {
-  color: #3e4f78;
-  background: #e4eafa;
+  border-color: #b8c8f4;
+  color: #294f9b;
+  background: #e7efff;
 }
 
 .status-en_proceso {
-  color: var(--color-warning);
-  background: var(--color-warning-soft);
+  border-color: #e7c86e;
+  color: #76530a;
+  background: #fff2c7;
 }
 
 .status-completado {
-  color: var(--color-success);
-  background: var(--color-success-soft);
+  border-color: #9bd1ba;
+  color: #126044;
+  background: #dff5ea;
 }
 
 .status-cancelado {
-  color: #5f6763;
-  background: #e7ebe8;
+  border-color: #e2aaa4;
+  color: #8b3027;
+  background: #fae8e5;
 }
 
 .status-pendiente,
@@ -1408,6 +1456,30 @@ a.table-primary:hover {
   background: var(--color-primary-soft);
 }
 
+.history-marker-programado {
+  border-color: #b8c8f4;
+  color: #294f9b;
+  background: #e7efff;
+}
+
+.history-marker-en_proceso {
+  border-color: #e7c86e;
+  color: #76530a;
+  background: #fff2c7;
+}
+
+.history-marker-completado {
+  border-color: #9bd1ba;
+  color: #126044;
+  background: #dff5ea;
+}
+
+.history-marker-cancelado {
+  border-color: #e2aaa4;
+  color: #8b3027;
+  background: #fae8e5;
+}
+
 .history-list article {
   min-width: 0;
   padding: 1rem 1.1rem;
@@ -1498,6 +1570,25 @@ a.table-primary:hover {
   font-size: 1.2rem;
 }
 
+.calendar-status-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(243, 245, 251, 0.72);
+}
+
+.calendar-status-legend-title {
+  margin-right: 0.25rem;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 .icon-button {
   display: grid;
   width: 2.5rem;
@@ -1566,11 +1657,13 @@ a.table-primary:hover {
 
 .calendar-event {
   display: grid;
-  gap: 0.05rem;
+  justify-items: start;
+  gap: 0.15rem;
   min-width: 0;
-  padding: 0.45rem 0.5rem;
-  border-left: 3px solid var(--color-primary);
-  border-radius: 0.3rem;
+  padding: 0.5rem;
+  border: 1px solid transparent;
+  border-left: 0.25rem solid var(--color-primary);
+  border-radius: 0.4rem;
   color: var(--color-text);
   background: var(--color-primary-soft);
   text-decoration: none;
@@ -1579,6 +1672,30 @@ a.table-primary:hover {
 .calendar-event.event-correctivo {
   border-left-color: var(--color-warning);
   background: var(--color-warning-soft);
+}
+
+.calendar-event.event-status-programado {
+  border-color: #b8c8f4;
+  border-left-color: #315da8;
+  background: #e7efff;
+}
+
+.calendar-event.event-status-en_proceso {
+  border-color: #e7c86e;
+  border-left-color: #80600f;
+  background: #fff2c7;
+}
+
+.calendar-event.event-status-completado {
+  border-color: #9bd1ba;
+  border-left-color: #17694c;
+  background: #dff5ea;
+}
+
+.calendar-event.event-status-cancelado {
+  border-color: #e2aaa4;
+  border-left-color: #963d32;
+  background: #fae8e5;
 }
 
 .calendar-event time,
@@ -1592,6 +1709,34 @@ a.table-primary:hover {
   font-size: 0.75rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.calendar-event .calendar-event-state {
+  margin-top: 0.15rem;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.61rem;
+  line-height: 1.2;
+}
+
+.calendar-event .calendar-event-state::before {
+  width: 0.35rem;
+  height: 0.35rem;
+}
+
+.calendar-event .status-programado {
+  color: #294f9b;
+}
+
+.calendar-event .status-en_proceso {
+  color: #76530a;
+}
+
+.calendar-event .status-completado {
+  color: #126044;
+}
+
+.calendar-event .status-cancelado {
+  color: #8b3027;
 }
 
 .calendar-event:hover strong {
