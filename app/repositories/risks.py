@@ -172,6 +172,9 @@ def list_historical_training_rows():
                     INTERVAL '7 days'
                 ) AS snapshot_day
                 WHERE bounds.first_day IS NOT NULL
+                  -- La etiqueta necesita los 30 días futuros completos.
+                  AND snapshot_day::TIMESTAMP + TIME '23:59:59'
+                      <= CURRENT_TIMESTAMP - INTERVAL '30 days'
             ), equipment_snapshots AS (
                 SELECT
                     e.id_equipo,

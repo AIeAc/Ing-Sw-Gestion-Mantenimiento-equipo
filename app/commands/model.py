@@ -41,6 +41,20 @@ def train_risk_model_command(muestras, semilla):
             f"recall={metrics['recall']:.3f}, "
             f"precision={metrics['precision']:.3f}"
         )
+        for source_name, label in (
+            ("historical", "históricos"),
+            ("synthetic", "simulados"),
+        ):
+            source = metrics["by_source"][source_name]
+            recall = (
+                f"{source['recall']:.3f}"
+                if source["recall"] is not None
+                else "no calculable"
+            )
+            click.echo(
+                f"  {label}: {source['samples']} en prueba, "
+                f"{source['positives']} positivos, recall={recall}"
+            )
     if not artifact["accepted"]:
         raise click.ClickException(
             "El modelo no cumplió los criterios mínimos; revisa el conjunto de datos."

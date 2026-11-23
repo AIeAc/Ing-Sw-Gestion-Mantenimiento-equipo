@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from datetime import datetime, timezone
+from math import ceil
 from pathlib import Path
 
 import joblib
@@ -50,12 +51,27 @@ def train_and_save_model(
         target = np.concatenate((synthetic_target, historical_target))
     else:
         features, target = synthetic_features, synthetic_target
-    x_train, x_test, y_train, y_test = train_test_split(
+    source = np.concatenate(
+        (
+            np.zeros(len(synthetic_target), dtype=int),
+            np.ones(len(historical_target), dtype=int),
+        )
+    )
+    source_and_target = source * 2 + target
+    _, stratum_counts = np.unique(source_and_target, return_counts=True)
+    stratification = (
+        source_and_target
+        if stratum_counts.min() >= 2
+        and ceil(len(target) * 0.20) >= len(stratum_counts)
+        else target
+    )
+    x_train, x_test, y_train, y_test, _source_train, source_test = train_test_split(
         features,
         target,
+        source,
         test_size=0.20,
         random_state=random_state,
-        stratify=target,
+        stratify=stratification,
     )
 
     candidates = {
@@ -95,14 +111,16 @@ def train_and_save_model(
     for name, candidate in candidates.items():
         candidate.fit(x_train, y_train)
         predicted = candidate.predict(x_test)
-        matrix = confusion_matrix(y_test, predicted, labels=[0, 1])
         evaluations[name] = {
             "model": candidate,
-            "accuracy": accuracy_score(y_test, predicted),
-            "precision": precision_score(y_test, predicted, zero_division=0),
-            "recall": recall_score(y_test, predicted, zero_division=0),
-            "f1": f1_score(y_test, predicted, zero_division=0),
-            "confusion_matrix": matrix.tolist(),
+            **_metrics(y_test, predicted),
+            "by_source": {
+                source_name: _metrics(
+                    y_test[source_test == source_id],
+                    predicted[source_test == source_id],
+                )
+                for source_name, source_id in (("historical", 1), ("synthetic", 0))
+            },
         }
 
     selected_name, selected = max(
@@ -120,7 +138,7 @@ def train_and_save_model(
 
     serialized_metrics = {
         name: {
-            key: round(float(value), 4) if key != "confusion_matrix" else value
+            key: _serialize_metric(value)
             for key, value in result.items()
             if key != "model"
         }
@@ -178,3 +196,35 @@ def _historical_dataset(rows: list[dict]):
     if not vectors:
         return np.empty((0, len(FEATURE_NAMES)), dtype=float), np.empty(0, dtype=int)
     return np.asarray(vectors, dtype=float), np.asarray(targets, dtype=int)
+
+
+def _metrics(actual, predicted):
+    samples = len(actual)
+    positives = int(np.sum(actual))
+    if not samples:
+        return {
+            "samples": 0,
+            "positives": 0,
+            "accuracy": None,
+            "precision": None,
+            "recall": None,
+            "f1": None,
+            "confusion_matrix": [[0, 0], [0, 0]],
+        }
+    return {
+        "samples": samples,
+        "positives": positives,
+        "accuracy": accuracy_score(actual, predicted),
+        "precision": precision_score(actual, predicted, zero_division=0),
+        "recall": recall_score(actual, predicted, zero_division=0) if positives else None,
+        "f1": f1_score(actual, predicted, zero_division=0),
+        "confusion_matrix": confusion_matrix(actual, predicted, labels=[0, 1]).tolist(),
+    }
+
+
+def _serialize_metric(value):
+    if isinstance(value, dict):
+        return {key: _serialize_metric(item) for key, item in value.items()}
+    if isinstance(value, (float, np.floating)):
+        return round(float(value), 4)
+    return value

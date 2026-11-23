@@ -38,14 +38,18 @@ El conjunto combina dos fuentes:
 
 - **Cortes históricos semanales:** para cada fecha se usan solamente las
   mediciones de los 30 días anteriores. La etiqueta es positiva cuando existe
-  un correctivo no cancelado durante los 30 días posteriores al corte.
+  un correctivo no cancelado durante los 30 días posteriores al corte. Se
+  excluyen cortes posteriores a la fecha actual menos 30 días, porque todavía
+  no tienen un horizonte de resultados completo.
 - **Escenarios simulados reproducibles:** complementan los pocos eventos de
   falla disponibles y conservan relaciones explícitas entre anomalías,
   historial correctivo y deterioro.
 
 La mezcla completa se divide en 80 % para entrenamiento y 20 % para prueba
-mediante una separación estratificada. La cantidad y procedencia de los casos
-quedan guardadas junto al modelo para permitir su revisión.
+mediante una separación estratificada por resultado y procedencia cuando hay
+casos suficientes en cada grupo; en conjuntos pequeños se estratifica solo por
+resultado. La cantidad y procedencia de los casos quedan guardadas junto al
+modelo para permitir su revisión.
 
 Se comparan:
 
@@ -59,7 +63,11 @@ seleccionado debe alcanzar como mínimo:
 - Recall de 0.70.
 
 La exactitud, precision, recall, F1 y matriz de confusión quedan guardadas como
-metadatos junto con el modelo.
+metadatos junto con el modelo. La evaluación también informa el tamaño,
+positivos y recall del subconjunto histórico y simulado de prueba. Si no hay
+positivos históricos de prueba, el recall se muestra como no calculable. El
+umbral de aceptación vigente se aplica a la mezcla; la adopción de un umbral
+separado para datos reales corresponde al Product Owner.
 
 ## Prioridad y costos
 
@@ -107,3 +115,13 @@ flask --app app entrenar-modelo-riesgo
 El comando obtiene los cortes históricos de la base actual, genera 1,600
 escenarios complementarios, entrena los dos algoritmos, compara sus resultados
 y guarda el modelo aceptado en `instance/modelo_riesgo.joblib`.
+
+## Verificación local del 22 de noviembre de 2026
+
+Con la base disponible se usaron 128 cortes históricos completos y 1,600 casos
+simulados. La partición de prueba incluyó 26 casos históricos, de los cuales
+3 eran correctivos. La Regresión Logística obtuvo F1 0.890 y recall 0.864 en
+la mezcla, pero recall 0.000 en los correctivos históricos. El resultado
+cumple los umbrales globales vigentes y permite demostrar el flujo del Sprint
+4; no valida el uso predictivo con datos reales. La decisión de adoptar un
+criterio mínimo separado para casos reales sigue a cargo del Product Owner.

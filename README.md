@@ -179,6 +179,11 @@ El comando combina cortes históricos de PostgreSQL con escenarios académicos
 reproducibles, compara Regresión Logística y Random Forest, selecciona el mejor
 resultado aceptado y guarda el
 archivo local dentro de `instance/`.
+Solo utiliza cortes que ya tienen 30 días completos de resultados. La salida y
+la ficha del modelo muestran por separado cuántos casos reales y simulados
+quedaron en prueba y el recall de cada grupo. Las métricas globales pueden
+estar dominadas por escenarios simulados; no deben interpretarse como
+validación de desempeño en equipos reales.
 
 ### 9. Ejecutar
 
@@ -274,7 +279,8 @@ python -m unittest tests.integration.test_postgres -v
 Esta prueba recorre el flujo completo: acceso del Administrador, creación de
 categoría, alta de Técnico, registro y búsqueda de equipo, registro de un
 mantenimiento, consulta de historial y calendario, y restricciones de acceso
-del Técnico.
+del Técnico. También se verifica que los cortes históricos del modelo usen
+mediciones anteriores y un horizonte de resultados completo.
 
 Las reglas de rangos, generación automática de alertas, inmutabilidad de las
 mediciones y vistas del dashboard se validan directamente en PostgreSQL:

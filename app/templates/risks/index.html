@@ -97,6 +97,22 @@
         <div title="Proporción de alertas del modelo que resultaron correctas." aria-label="Precisión: proporción de alertas del modelo que resultaron correctas."><span>Precisión</span><strong>{{ '%.3f'|format(metadata.metrics.precision) }}</strong></div>
         <div title="Proporción total de predicciones correctas." aria-label="Exactitud: proporción total de predicciones correctas."><span>Exactitud</span><strong>{{ '%.3f'|format(metadata.metrics.accuracy) }}</strong></div>
       </div>
+      {% if metadata.metrics.by_source is defined %}
+        <h3>Resultados según procedencia</h3>
+        <div class="table-scroll"><table><thead><tr><th>Casos de prueba</th><th>Casos</th><th>Correctivos</th><th>Recall</th></tr></thead><tbody>
+          {% for source, label in [('historical', 'Históricos'), ('synthetic', 'Simulados')] %}
+            {% set result = metadata.metrics.by_source[source] %}
+            <tr><td>{{ label }}</td><td>{{ result.samples }}</td><td>{{ result.positives }}</td><td>{{ '%.3f'|format(result.recall) if result.recall is not none else 'No calculable' }}</td></tr>
+          {% endfor %}
+        </tbody></table></div>
+        {% set historical_result = metadata.metrics.by_source.historical %}
+        {% if historical_result.positives == 0 %}
+          <p class="supporting-note">No hubo correctivos históricos en la prueba; no se puede medir su detección con datos reales.</p>
+        {% elif historical_result.recall == 0 %}
+          <p class="supporting-note">El modelo no detectó ninguno de los {{ historical_result.positives }} correctivos históricos de prueba.</p>
+        {% endif %}
+        <p class="supporting-note">La métrica global incluye escenarios simulados. El resultado es una estimación académica; el desempeño histórico debe revisarse por separado.</p>
+      {% endif %}
       <details class="model-comparison"><summary>Comparación de algoritmos</summary><div class="table-scroll"><table><thead><tr><th>Modelo</th><th>F1</th><th>Recall</th></tr></thead><tbody>{% for name, metrics in metadata.evaluations.items() %}<tr><td>{{ name }}</td><td>{{ '%.3f'|format(metrics.f1) }}</td><td>{{ '%.3f'|format(metrics.recall) }}</td></tr>{% endfor %}</tbody></table></div></details>
     </aside>{% endif %}
   </div>

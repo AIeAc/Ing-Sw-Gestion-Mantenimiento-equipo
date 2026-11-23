@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from math import log1p
 
 
-MODEL_VERSION = 1
+MODEL_VERSION = 2
 TARGET_DESCRIPTION = "Mantenimiento correctivo dentro de los próximos 30 días"
 PREDICTION_HORIZON_DAYS = 30
 MINIMUM_MEASUREMENTS = 5

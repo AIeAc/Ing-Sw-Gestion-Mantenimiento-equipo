@@ -4,12 +4,13 @@ from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
+import joblib
 
 from app import create_app
 from app.ml.dataset import generate_synthetic_dataset
 from app.ml.decision import analyze_priority_and_cost
-from app.ml.features import FEATURE_NAMES, normalize_feature_row
-from app.ml.prediction import predict_equipment_risk
+from app.ml.features import FEATURE_NAMES, MODEL_VERSION, normalize_feature_row
+from app.ml.prediction import IncompatibleModelError, load_model_artifact, predict_equipment_risk
 from app.ml.training import train_and_save_model
 
 
@@ -63,6 +64,10 @@ def model_artifact():
                 "recall": 0.82,
                 "f1": 0.815,
                 "confusion_matrix": [[50, 10], [11, 49]],
+                "by_source": {
+                    "historical": {"samples": 8, "positives": 2, "recall": 0.0},
+                    "synthetic": {"samples": 112, "positives": 58, "recall": 0.85},
+                },
             },
             "Regresión logística": {
                 "accuracy": 0.80,
@@ -102,6 +107,9 @@ class RiskModelTests(unittest.TestCase):
             self.assertEqual(artifact["dataset"]["test_samples"], 120)
             self.assertEqual(artifact["dataset"]["historical_samples"], 0)
             self.assertEqual(artifact["dataset"]["synthetic_samples"], 600)
+            second = train_and_save_model(Path(directory) / "second.joblib", 600, 42)
+            self.assertEqual(artifact["selected_model"], second["selected_model"])
+            self.assertEqual(artifact["evaluations"], second["evaluations"])
 
     def test_training_can_mix_historical_and_synthetic_cases(self):
         rows = [
@@ -119,6 +127,31 @@ class RiskModelTests(unittest.TestCase):
         self.assertEqual(artifact["dataset"]["samples"], 320)
         self.assertEqual(artifact["dataset"]["historical_samples"], 20)
         self.assertIn("Historial PostgreSQL", artifact["dataset"]["source"])
+        for result in artifact["evaluations"].values():
+            historical = result["by_source"]["historical"]
+            simulated = result["by_source"]["synthetic"]
+            self.assertEqual(historical["samples"] + simulated["samples"],
+                             artifact["dataset"]["test_samples"])
+            self.assertGreater(historical["samples"], 0)
+            self.assertGreater(historical["positives"], 0)
+            self.assertEqual(len(historical["confusion_matrix"]), 2)
+
+    def test_incompatible_model_metadata_is_rejected(self):
+        base = {
+            "model_version": MODEL_VERSION,
+            "feature_names": list(FEATURE_NAMES),
+            "accepted": True,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            for index, change in enumerate((
+                {"model_version": MODEL_VERSION + 1},
+                {"feature_names": []},
+                {"accepted": False},
+            )):
+                path = Path(directory) / f"model-{index}.joblib"
+                joblib.dump({**base, **change}, path)
+                with self.assertRaises(IncompatibleModelError):
+                    load_model_artifact(path)
 
     def test_risk_levels_and_insufficient_data_are_explicit(self):
         artifact = {
@@ -183,6 +216,9 @@ class RiskPageTests(unittest.TestCase):
         self.assertIn(b"78%", response.data)
         self.assertIn(b"Random Forest", response.data)
         self.assertIn("Comparación de algoritmos".encode(), response.data)
+        self.assertIn("Resultados según procedencia".encode(), response.data)
+        self.assertIn(b"0.000", response.data)
+        self.assertIn("no detectó ninguno de los 2 correctivos".encode(), response.data)
         self.assertIn("Atención inmediata".encode(), response.data)
         self.assertIn(b"$8,000", response.data)
         self.assertIn("Exposición".encode(), response.data)
@@ -208,6 +244,7 @@ class RiskPageTests(unittest.TestCase):
         self.assertNotIn("Regresión logística".encode(), response.data)
         self.assertNotIn(b"F1", response.data)
         self.assertNotIn(b"Recall", response.data)
+        self.assertNotIn("Resultados según procedencia".encode(), response.data)
         self.assertNotIn("Costo estimado".encode(), response.data)
         self.assertNotIn("Exposición".encode(), response.data)
 
